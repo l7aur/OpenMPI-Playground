@@ -114,10 +114,9 @@ int _RetrieveNumberOfNumbers(
     assert(number_of_numbers != NULL);
 
     __try {
-        int status = MPI_Scatterv(
+        int status = MPI_Scatter(
             NULL,
-            NULL,
-            NULL,
+            0,
             MPI_INT,
             number_of_numbers,
             1,

@@ -171,7 +171,7 @@ int _NotifySlavesOfNumbersSize(
     const int world_size
 )
 {
-    int * numbers = NULL, *send_counts = NULL, *displacements = NULL;
+    int * numbers = NULL;
     __try {
         numbers = (int*)malloc(sizeof(int) * world_size);
         if (numbers == NULL) {
@@ -179,31 +179,16 @@ int _NotifySlavesOfNumbersSize(
             __throw(EXIT_FAILURE);
         }
 
-        send_counts = (int*)malloc(sizeof(int) * world_size);
-        if (numbers == NULL) {
-            fprintf(stderr, "[%d] Failed to allocate numbers * world_size buffer - send_counts\n", id);
-            __throw(EXIT_FAILURE);
-        }
-
-        displacements = (int*)malloc(sizeof(int) * world_size);
-        if (numbers == NULL) {
-            fprintf(stderr, "[%d] Failed to allocate numbers * world_size buffer - displacements\n", id);
-            __throw(EXIT_FAILURE);
-        }
-
         for (int i = 0; i < world_size; i++) {
             numbers[i] = (i < world_size - 1)
                 ? number_of_numbers / world_size
                 : number_of_numbers / world_size + number_of_numbers % world_size;
-            send_counts[i] = 1;
-            displacements[i] = i;
         }
 
         int recv_buf = 0;
-        int status = MPI_Scatterv(
+        int status = MPI_Scatter(
             numbers,
-            send_counts,
-            displacements,
+            1,
             MPI_INT,
             &recv_buf,
             1,
@@ -223,10 +208,6 @@ int _NotifySlavesOfNumbersSize(
 
         if (numbers != NULL)
             free(numbers), numbers = NULL;
-        if (send_counts != NULL)
-            free(send_counts), send_counts = NULL;
-        if (displacements != NULL)
-            free(displacements), displacements = NULL;
     }
 
     return EXIT_SUCCESS;
