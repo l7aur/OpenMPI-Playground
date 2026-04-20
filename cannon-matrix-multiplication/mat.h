@@ -17,7 +17,7 @@ mat* MatrixAllocate(
 );
 
 void MatrixDeallocate(
-    mat* matrix
+    mat** matrix
 );
 
 mat* MatrixRead(

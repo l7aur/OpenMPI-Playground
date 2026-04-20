@@ -38,14 +38,14 @@ mat* MatrixAllocate(
 }
 
 void MatrixDeallocate(
-    mat* matrix
+    mat** matrix
 ) {
-    assert(matrix != NULL);
+    assert(*matrix != NULL);
     
-    if (matrix->data != NULL)
-        free(matrix->data), matrix->data = NULL;
+    if ((*matrix)->data != NULL)
+        free((*matrix)->data), (*matrix)->data = NULL;
     
-    free(matrix), matrix = NULL;
+    free(*matrix), (*matrix) = NULL;
 }
 
 mat* MatrixRead(
@@ -88,7 +88,7 @@ mat* MatrixRead(
                 fclose(fd);
 
             if (matrix != NULL)
-                MatrixDeallocate(matrix);
+                MatrixDeallocate(&matrix);
             return NULL;
         }
     }
@@ -146,6 +146,10 @@ int MatrixPartition(
             __throw(EXIT_FAILURE);
         }
 
+#ifdef CUSTOM_DEBUG
+        printf("Matrix Partition: rowStep=%d, colStep=%d, gridW=%d, gridH=%d\n", rowStep, colStep, gridWidth, gridHeight);
+#endif
+
         for (int i = 0; i < gridHeight; ++i)
             for (int j = 0; j < gridWidth; ++j) {
                 int rowEnd = (i == gridHeight - 1) ? (*input)->rows : (i + 1) * rowStep;
@@ -157,7 +161,7 @@ int MatrixPartition(
                 );
         }
 
-        MatrixDeallocate(*input);
+        MatrixDeallocate(input);
     }
     __finally {
         if (__error_code) {
@@ -190,7 +194,7 @@ mat* _MatrixCloneSubMatrix(
 
     const unsigned int numberOfRows = rowEnd - rowStart;
     const unsigned int numberOfColumns = colEnd - colStart;
-    if (numberOfRows <= 0 || numberOfRows <= 0)
+    if (numberOfRows <= 0 || numberOfColumns <= 0)
         return NULL;
 
     mat* matrix = MatrixAllocate(numberOfRows, numberOfColumns);

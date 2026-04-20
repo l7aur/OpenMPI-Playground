@@ -1,5 +1,6 @@
 #pragma once
 
-void Slave(
-    const int id
+int Slave(
+    const int id,
+    const int coords[WORLD_DIMENSIONS]
 );

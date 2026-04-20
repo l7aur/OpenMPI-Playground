@@ -42,10 +42,10 @@ int Parse(
     __finally {
         if (__error_code != EXIT_SUCCESS) {
             if (*matrix_a != NULL)
-                MatrixDeallocate(*matrix_a);
+                MatrixDeallocate(matrix_a);
 
             if (*matrix_b != NULL)
-                MatrixDeallocate(*matrix_b);
+                MatrixDeallocate(matrix_b);
 
             return EXIT_FAILURE;    
         }
