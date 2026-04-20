@@ -20,7 +20,7 @@ echo "epoch, number_of_processes, input_file, execution_time" > $RESULT_FILE
 
 echo "Starting benchmarking..."
 
-for epoch in {1..25}; do
+for epoch in {1..50}; do
     echo "Epoch $epoch"
 
     for data in "${INPUT_FILES[@]}"; do
@@ -44,6 +44,9 @@ for epoch in {1..25}; do
             else
                 echo "$epoch, $p, $data, $EXEC_TIME" >> $RESULT_FILE
             fi
+
+            sleep 2
+        
         done
     done
 done

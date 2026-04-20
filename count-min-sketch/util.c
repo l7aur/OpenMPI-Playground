@@ -14,7 +14,7 @@ int parse(
 )
 {
     if (argc != 4) {
-        fprintf(stderr, "Usage ./<.exe> <number_of_hash_functions> <number_of_counters> <input_file_path>\n");
+        fprintf(stderr, "Usage ./main <number_of_hash_functions> <number_of_counters> <input_file_path>\n");
         fprintf(stderr, "input file path size < %d", INPUT_FILE_PATH_MAX_SIZE);
         fprintf(stderr, "<number_of_hash_functions> must be >= 3 and <= 5\n");
         fprintf(stderr, "<number_of_counters> must be > 0\n");
