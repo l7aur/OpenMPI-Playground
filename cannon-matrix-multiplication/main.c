@@ -16,6 +16,9 @@ int main(const int argc, const char* argv[])
             printf("Failed to initialize MPI.\n");
             __throw(EXIT_FAILURE);
         }
+
+        
+
     }
     __finally {
         if (__error_code != EXIT_SUCCESS) {
