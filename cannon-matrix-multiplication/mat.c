@@ -5,9 +5,17 @@
 #include <stdlib.h>
 #include <assert.h>
 
+mat* _MatrixCloneSubMatrix(
+    const mat* input,
+    const unsigned int rowStart,
+    const unsigned int colStart,
+    const unsigned int rowEnd,
+    const unsigned int colEnd
+);
+
 mat* MatrixAllocate(
-    const int rows,
-    const int cols
+    const unsigned int rows,
+    const unsigned int cols
 ) {
     assert(rows > 0 && cols > 0);
 
@@ -112,4 +120,88 @@ void MatrixPrint(
             fprintf(out, "%d ", *MatrixAt(matrix, i, j));
         fprintf(out, "\n");
     }
+}
+
+int MatrixPartition(
+    const unsigned int gridWidth,
+    const unsigned int gridHeight,
+    mat** input,
+    mat*** output
+) {
+    assert(gridWidth > 0 && gridHeight > 0);
+    assert(input != NULL && *input != NULL);
+    assert(output != NULL && *output == NULL);
+
+    __try {
+        *output = (mat**)malloc(sizeof(mat*) * gridHeight * gridWidth);
+        if (*output == NULL) {
+            fprintf(stderr, "Failed to allocate matrices array!\n");
+            __throw(EXIT_FAILURE);
+        }
+
+        unsigned int rowStep = (*input)->rows / gridHeight;
+        unsigned int colStep = (*input)->cols / gridWidth;
+        if (rowStep <= 0 || colStep <= 0) {
+            fprintf(stderr, "Partition failure: rowstep=%d, colStep=%d.\n", rowStep, colStep);
+            __throw(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < gridHeight; ++i)
+            for (int j = 0; j < gridWidth; ++j) {
+                int rowEnd = (i == gridHeight - 1) ? (*input)->rows : (i + 1) * rowStep;
+                int colEnd = (j == gridWidth - 1) ? (*input)->cols : (j + 1) * colStep;
+                (*output)[i * gridWidth + j] = _MatrixCloneSubMatrix(
+                    *input,
+                    i * rowStep, j * colStep,
+                    rowEnd, colEnd
+                );
+        }
+
+        MatrixDeallocate(*input);
+    }
+    __finally {
+        if (__error_code) {
+            if (*output != NULL) {
+                for (int i = 0; i < gridWidth * gridHeight; ++i) {
+                    if ((*output)[i] != NULL)
+                        free((*output)[i]), (*output)[i] = NULL;
+                }
+                free(*output), *output = NULL;
+            }
+
+            return __error_code;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+mat* _MatrixCloneSubMatrix(
+    const mat* input,
+    const unsigned int rowStart,
+    const unsigned int colStart,
+    const unsigned int rowEnd,
+    const unsigned int colEnd
+) {
+    assert(input != NULL);
+    assert(rowStart >= 0 && colStart >= 0);
+    assert(rowEnd <= input->rows && colEnd <= input->cols);
+    assert(rowStart < rowEnd && colStart < colEnd);
+
+    const unsigned int numberOfRows = rowEnd - rowStart;
+    const unsigned int numberOfColumns = colEnd - colStart;
+    if (numberOfRows <= 0 || numberOfRows <= 0)
+        return NULL;
+
+    mat* matrix = MatrixAllocate(numberOfRows, numberOfColumns);
+    if (matrix == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < numberOfRows; i++) {
+        for (int j = 0; j < numberOfColumns; j++)
+            *MatrixAt(matrix, i, j) = *MatrixAt(input, i + rowStart, j + colStart);
+    }
+
+    return matrix;
 }

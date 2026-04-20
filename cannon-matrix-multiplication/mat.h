@@ -6,14 +6,14 @@
 
 typedef struct _mat 
 {
-    int rows;
-    int cols; 
+    unsigned int rows;
+    unsigned int cols; 
     MAT_INNER_TYPE* data;
 } mat;
 
 mat* MatrixAllocate(
-    const int rows,
-    const int cols
+    const unsigned int rows,
+    const unsigned int cols
 );
 
 void MatrixDeallocate(
@@ -33,4 +33,11 @@ MAT_INNER_TYPE* MatrixAt(
 void MatrixPrint(
     const mat* matrix,
     FILE* out
+);
+
+int MatrixPartition(
+    const unsigned int gridWidth,
+    const unsigned int gridHeight,
+    mat** input,
+    mat*** output
 );

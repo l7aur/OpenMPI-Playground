@@ -11,6 +11,8 @@
 #define __throw(X)      { __error_code = (X); goto final; }
 #define __finally       final:
 
+enum Direction { Left, Right, Up, Down };
+
 int Parse(
     const int argc,
     const char* argv[],

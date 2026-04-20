@@ -12,6 +12,19 @@ int main(const int argc, const char* argv[])
             __throw(EXIT_FAILURE);
         }
 
+        int gridWidth = 3, gridHeight = 3;
+        mat** partitions = NULL;
+        int status = MatrixPartition(gridWidth, gridHeight, &matrix_a, &partitions);
+        if (status != EXIT_SUCCESS) {
+            fprintf(stderr, "Failed to partition input matrix!\n");
+            __throw(status);
+        }
+
+        for (int i = 0; i < gridWidth * gridHeight; i++) {
+            MatrixPrint(partitions[i], stdout);
+            printf("\n");
+        }
+
         if (MPI_Init(NULL, NULL) != MPI_SUCCESS) {
             printf("Failed to initialize MPI.\n");
             __throw(EXIT_FAILURE);
