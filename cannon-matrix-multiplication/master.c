@@ -16,6 +16,18 @@ int _MasterSetGrid(
     mat** my_b /* OUT */
 );
 
+void _MasterRearrangePartitionsShiftLeft(
+    mat** partition,
+    const unsigned int gridWidth,
+    const unsigned int gridHeight
+);
+
+void _MasterRearrangePartitionsShiftUp(
+    mat** partition,
+    const unsigned int gridWidth,
+    const unsigned int gridHeight
+);
+
 int _MasterSendSetupMatrix(
     const mat* matrix,
     const int targetCoords[WORLD_DIMENSIONS],
@@ -95,6 +107,10 @@ int _MasterSetGrid(
             fprintf(stderr, "[%d] Failed to partition matrix b!\n", id);
             __throw(status);
         }
+
+        _MasterRearrangePartitionsShiftLeft(partitions_a, gridWidth, gridHeight);
+        _MasterRearrangePartitionsShiftUp(partitions_b, gridWidth, gridHeight);
+
         *my_a = partitions_a[0];
         partitions_a[0] = NULL;
         
@@ -145,6 +161,46 @@ int _MasterSetGrid(
     }
 
     return EXIT_SUCCESS;
+}
+
+void _MasterRearrangePartitionsShiftLeft(
+    mat** partition,
+    const unsigned int gridWidth,
+    const unsigned int gridHeight
+) {
+    assert(gridWidth > 0 && gridHeight > 0);
+    assert(partition != NULL);
+
+    for (int i = 1; i < gridHeight; i++) {
+        // Shift Row i left by i positions
+        for (int shift = 0; shift < i; shift++) {
+            mat* first = partition[i * gridWidth];
+            for (int j = 0; j < gridWidth - 1; j++) {
+                partition[i * gridWidth + j] = partition[i * gridWidth + j + 1];
+            }
+            partition[i * gridWidth + gridWidth - 1] = first;
+        }
+    }
+}
+
+void _MasterRearrangePartitionsShiftUp(
+    mat** partition,
+    const unsigned int gridWidth,
+    const unsigned int gridHeight
+) {
+    assert(gridWidth > 0 && gridHeight > 0);
+    assert(partition != NULL);
+
+    for (int j = 1; j < gridWidth; j++) {
+        // Shift Column j up by j positions
+        for (int shift = 0; shift < j; shift++) {
+            mat* top = partition[j];
+            for (int i = 0; i < gridHeight - 1; i++) {
+                partition[i * gridWidth + j] = partition[(i + 1) * gridWidth + j];
+            }
+            partition[(gridHeight - 1) * gridWidth + j] = top;
+        }
+    }
 }
 
 int _MasterSendSetupMatrix(
