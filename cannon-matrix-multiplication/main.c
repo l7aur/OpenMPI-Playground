@@ -71,19 +71,27 @@ int main(const int argc, const char* argv[])
                 __throw(EXIT_FAILURE);
             }
 
+            if (matrix_a->cols != matrix_b->rows) {
+                fprintf(stderr, "%dx%d matrix cannot be multiplied by %dx%d matix!\nRevise input!\n",
+                    matrix_a->rows, matrix_a->cols, matrix_b->rows, matrix_b->cols);
+                __throw(EXIT_FAILURE);
+            }
+
             status = Master(
                 rank,
                 dims[1],
                 dims[0],
                 coords,
                 &matrix_a,
-                &matrix_b
+                &matrix_b,
+                &cartesianComm
             );
         }
         else {
             status = Slave(
                 rank,
-                coords
+                coords,
+                &cartesianComm
             );
         }
 

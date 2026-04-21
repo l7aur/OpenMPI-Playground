@@ -2,7 +2,8 @@
 
 #include <stdio.h>
 
-#define MAT_INNER_TYPE      int
+#define MAT_INNER_TYPE              int
+#define MAT_STRUCT_NUMBER_OF_FIELDS 3
 
 typedef struct _mat 
 {

@@ -2,5 +2,6 @@
 
 int Slave(
     const int id,
-    const int coords[WORLD_DIMENSIONS]
+    const int coords[WORLD_DIMENSIONS],
+    MPI_Comm* cartesianComm
 );

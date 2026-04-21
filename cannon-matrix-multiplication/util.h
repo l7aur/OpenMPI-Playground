@@ -13,6 +13,9 @@
 #define MPI_ALLOW_REORDER       1
 #define MAX_NUMBER_OF_MATRICES  2
 
+#define MATRIX_A_TAG            10
+#define MATRIX_B_TAG            20
+
 #define GRID_DIMENSION(X)       sqrt(X)
 
 #define __try           int __error_code = EXIT_SUCCESS;       

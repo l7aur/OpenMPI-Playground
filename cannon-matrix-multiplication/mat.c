@@ -1,9 +1,12 @@
 #include "mat.h"
 #include "util.h"
 
+#include <mpi/mpi.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stddef.h>
 
 mat* _MatrixCloneSubMatrix(
     const mat* input,
