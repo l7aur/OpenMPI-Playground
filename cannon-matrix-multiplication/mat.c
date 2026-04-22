@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
+#include <memory.h>
 
 mat* _MatrixCloneSubMatrix(
     const mat* input,
@@ -30,7 +31,7 @@ mat* MatrixAllocate(
 
     matrix->rows = rows;
     matrix->cols = cols;
-    matrix->data = (MAT_INNER_TYPE*)malloc(sizeof(MAT_INNER_TYPE) * rows * cols);
+    matrix->data = (MAT_INNER_TYPE*)calloc(rows * cols, sizeof(MAT_INNER_TYPE));
     if (matrix->data == NULL) {
         fprintf(stderr, "Failed to allocate matrix data!\n");
         free(matrix), matrix = NULL;
@@ -52,6 +53,7 @@ void MatrixDeallocate(
 }
 
 mat* MatrixRead(
+    const unsigned int gridLength,
     const char* file_path
 ) {
     FILE* fd = fopen(file_path, "r");
@@ -68,6 +70,8 @@ mat* MatrixRead(
             fprintf(stderr, "Failed to read number of rows and columns for matrix in '%s'.\n", file_path);
             __throw(EXIT_FAILURE);
         }
+
+        // todo if rows||cols % gridLength != 0 add padding
 
         matrix = MatrixAllocate(rows, cols);
         if (matrix == NULL) {
@@ -126,38 +130,37 @@ void MatrixPrint(
 }
 
 int MatrixPartition(
-    const unsigned int gridWidth,
-    const unsigned int gridHeight,
+    const unsigned int gridLength,
     mat** input,
     mat*** output
 ) {
-    assert(gridWidth > 0 && gridHeight > 0);
+    assert(gridLength > 0);
     assert(input != NULL && *input != NULL);
     assert(output != NULL && *output == NULL);
 
     __try {
-        *output = (mat**)malloc(sizeof(mat*) * gridHeight * gridWidth);
+        *output = (mat**)malloc(sizeof(mat*) * gridLength * gridLength);
         if (*output == NULL) {
             fprintf(stderr, "Failed to allocate matrices array!\n");
             __throw(EXIT_FAILURE);
         }
 
-        unsigned int rowStep = (*input)->rows / gridHeight;
-        unsigned int colStep = (*input)->cols / gridWidth;
+        unsigned int rowStep = (*input)->rows / gridLength;
+        unsigned int colStep = (*input)->cols / gridLength;
         if (rowStep <= 0 || colStep <= 0) {
             fprintf(stderr, "Partition failure: rowstep=%d, colStep=%d.\n", rowStep, colStep);
             __throw(EXIT_FAILURE);
         }
 
 #ifdef CUSTOM_DEBUG
-        printf("Matrix Partition: rowStep=%d, colStep=%d, gridW=%d, gridH=%d\n", rowStep, colStep, gridWidth, gridHeight);
+        printf("Matrix Partition: rowStep=%d, colStep=%d, gridW=%d, gridH=%d\n", rowStep, colStep, gridLength, gridLength);
 #endif
 
-        for (int i = 0; i < gridHeight; ++i)
-            for (int j = 0; j < gridWidth; ++j) {
-                int rowEnd = (i == gridHeight - 1) ? (*input)->rows : (i + 1) * rowStep;
-                int colEnd = (j == gridWidth - 1) ? (*input)->cols : (j + 1) * colStep;
-                (*output)[i * gridWidth + j] = _MatrixCloneSubMatrix(
+        for (int i = 0; i < gridLength; ++i)
+            for (int j = 0; j < gridLength; ++j) {
+                int rowEnd = (i == gridLength - 1) ? (*input)->rows : (i + 1) * rowStep;
+                int colEnd = (j == gridLength - 1) ? (*input)->cols : (j + 1) * colStep;
+                (*output)[i * gridLength + j] = _MatrixCloneSubMatrix(
                     *input,
                     i * rowStep, j * colStep,
                     rowEnd, colEnd
@@ -169,7 +172,7 @@ int MatrixPartition(
     __finally {
         if (__error_code) {
             if (*output != NULL) {
-                for (int i = 0; i < gridWidth * gridHeight; ++i) {
+                for (int i = 0; i < gridLength * gridLength; ++i) {
                     if ((*output)[i] != NULL)
                         free((*output)[i]), (*output)[i] = NULL;
                 }
@@ -181,6 +184,21 @@ int MatrixPartition(
     }
 
     return EXIT_SUCCESS;
+}
+
+void MatrixElementwiseMultiply(
+    mat *a,
+    mat *b,
+    mat *r
+) {
+    assert(r != NULL);
+    assert(a != NULL && b != NULL);
+    assert(a->cols == b->cols && a->rows == b->rows);
+    assert(a->cols == r->cols && a->rows == r->rows);
+    
+    for (int i = 0; i < r->rows; i++)
+        for (int j = 0; j < r->cols; j++)
+            *MatrixAt(r, i, j) = *MatrixAt(r, i, j) + *MatrixAt(a, i, j) * *MatrixAt(b, i, j);
 }
 
 mat* _MatrixCloneSubMatrix(

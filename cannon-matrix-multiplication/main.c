@@ -35,7 +35,8 @@ int main(const int argc, const char* argv[])
             dims,
             periods,
             MPI_ALLOW_REORDER,
-            &cartesianComm) != MPI_SUCCESS) {
+            &cartesianComm) != MPI_SUCCESS
+        ) {
             fprintf(stderr, "Failed to create cartesian communicator!\n");
             __throw(EXIT_FAILURE);
         }
@@ -61,13 +62,15 @@ int main(const int argc, const char* argv[])
 
         int status = EXIT_SUCCESS;
         if (rank == 0) {
-            if (GRID_DIMENSION(size) * GRID_DIMENSION(size) != size) {
-                fprintf(stderr, "The number of processes must be a perfect square!\n");
-                __throw(EXIT_FAILURE);
-            }
-            
-            if (Parse(argc, argv, &matrix_a, &matrix_b) != EXIT_SUCCESS || matrix_a == NULL || matrix_b == NULL) {
-                printf("Parsing failed: matrix_a = %p, matrix_b = %p!\n", matrix_a, matrix_b);
+            for (int i = 1; i < WORLD_DIMENSIONS; ++i)
+                if (dims[0] != dims[i]) {
+                    fprintf(stderr, "The number of processes must be a perfect square!\n");
+                    __throw(EXIT_FAILURE);
+                }
+
+            if (Parse(argc, argv, dims[0], &matrix_a, &matrix_b) != EXIT_SUCCESS 
+                || matrix_a == NULL || matrix_b == NULL) {
+                printf("Parsing failed: matrix_a=%p, matrix_b=%p!\n", matrix_a, matrix_b);
                 __throw(EXIT_FAILURE);
             }
 
@@ -79,7 +82,6 @@ int main(const int argc, const char* argv[])
 
             status = Master(
                 rank,
-                dims[1],
                 dims[0],
                 coords,
                 &matrix_a,
@@ -90,6 +92,7 @@ int main(const int argc, const char* argv[])
         else {
             status = Slave(
                 rank,
+                dims[0],
                 coords,
                 &cartesianComm
             );

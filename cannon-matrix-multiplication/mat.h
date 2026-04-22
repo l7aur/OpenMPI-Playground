@@ -22,6 +22,7 @@ void MatrixDeallocate(
 );
 
 mat* MatrixRead(
+    const unsigned int gridLength,
     const char* file_path
 );
 
@@ -37,8 +38,13 @@ void MatrixPrint(
 );
 
 int MatrixPartition(
-    const unsigned int gridWidth,
-    const unsigned int gridHeight,
+    const unsigned int gridLength,
     mat** input,
     mat*** output
+);
+
+void MatrixElementwiseMultiply(
+    mat* a,
+    mat* b,
+    mat* r
 );

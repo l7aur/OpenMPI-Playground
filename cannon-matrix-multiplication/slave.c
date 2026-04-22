@@ -1,6 +1,8 @@
 #include "util.h"
 #include "slave.h"
 
+#include <assert.h>
+
 mat* _SlaveReceiveSetupMatrix(
     const int id,
     const int coords[WORLD_DIMENSIONS],
@@ -10,12 +12,17 @@ mat* _SlaveReceiveSetupMatrix(
 
 int Slave(
     const int id,
+    const unsigned int gridLength,
     const int coords[WORLD_DIMENSIONS],
     MPI_Comm* cartesianComm
 ) {
+    assert(cartesianComm != NULL);
+    assert(coords != NULL);
+    assert(gridLength > 0);
 
     mat* my_a = NULL;
     mat* my_b = NULL;
+    mat * my_c = NULL;
     __try {
         my_a = _SlaveReceiveSetupMatrix(id, coords, cartesianComm, MATRIX_A_TAG);
         if (my_a == NULL) {
@@ -35,12 +42,39 @@ int Slave(
         printf("[%d] (%d; %d) My setup matrix B is:\n", id, coords[0], coords[1]);
         MatrixPrint(my_b, stdout);
 #endif
+
+        if (CanonAlgorithm(
+            id,
+            my_a,
+            my_b,
+            gridLength,
+            cartesianComm,
+            &my_c
+        ) != EXIT_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to execute Cannon's algorithm!\n", id);
+            __throw(EXIT_FAILURE);
+        }
+
+#ifdef CUSTOM_DEBUG_ALG
+        printf("[%d] (%d; %d) My result matrix C is:\n", id, coords[0], coords[1]);
+        MatrixPrint(my_c, stdout);
+        printf("\n");
+#endif
+
+        if (CollectResult(
+
+        ) != EXIT_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to call result collection!\n", id);
+            __throw(EXIT_FAILURE);
+        }
     }
     __finally {
         if (my_a != NULL)
             MatrixDeallocate(&my_a);
         if (my_b != NULL)
             MatrixDeallocate(&my_b);
+        if (my_c != NULL)
+            MatrixDeallocate(&my_c);
 
         if (__error_code != EXIT_SUCCESS) {
             return EXIT_FAILURE;

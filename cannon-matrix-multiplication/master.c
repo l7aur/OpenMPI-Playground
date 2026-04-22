@@ -6,8 +6,7 @@
 
 int _MasterSetGrid(
     const int id,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight,
+    const unsigned int gridLength,
     const int coords[WORLD_DIMENSIONS],
     mat** matrix_a,
     mat** matrix_b,
@@ -18,17 +17,15 @@ int _MasterSetGrid(
 
 void _MasterRearrangePartitionsShiftLeft(
     mat** partition,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight
+    const unsigned int gridLength
 );
 
 void _MasterRearrangePartitionsShiftUp(
     mat** partition,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight
+    const unsigned int gridLength
 );
 
-int _MasterSendSetupMatrix(
+int _MasterSendMatrix(
     const mat* matrix,
     const int targetCoords[WORLD_DIMENSIONS],
     const MPI_Comm* cartesianComm,
@@ -42,8 +39,7 @@ void _MasterFreePartitions(
 
 int Master(
     const int id,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight,
+    const unsigned int gridLength,
     const int coords[WORLD_DIMENSIONS],
     mat** matrix_a,
     mat** matrix_b,
@@ -52,22 +48,65 @@ int Master(
     assert(matrix_a != NULL && matrix_b != NULL);
     assert(coords != NULL);
     assert(cartesianComm != NULL);
+    assert(gridLength > 0);
     
-    mat * my_a = NULL, * my_b = NULL;
+    mat * my_a = NULL;
+    mat * my_b = NULL;
+    mat * my_c = NULL;
     __try {
-        int status = _MasterSetGrid(id, gridWidth, gridHeight, coords, matrix_a, matrix_b, cartesianComm, &my_a, &my_b);
-        if (status != EXIT_SUCCESS) {
+        if (_MasterSetGrid(
+            id,
+            gridLength,
+            coords, 
+            matrix_a, 
+            matrix_b, 
+            cartesianComm, 
+            &my_a, 
+            &my_b
+        ) != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Setting the grid up failed!\n", id);
-            __throw(status);
+            __throw(EXIT_FAILURE);
         }
-        
+
+#ifdef CUSTOM_DEBUG
+        printf("[%d] (%d; %d) My setup matrix A is:\n", id, coords[0], coords[1]);
+        MatrixPrint(my_a, stdout);
+        printf("[%d] (%d; %d) My setup matrix B is:\n", id, coords[0], coords[1]);
+        MatrixPrint(my_b, stdout);
+#endif
+
+        if (CanonAlgorithm(
+            id,
+            my_a,
+            my_b,
+            gridLength,
+            cartesianComm,
+            &my_c
+        ) != EXIT_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to execute Cannon's algorithm!\n", id);
+            __throw(EXIT_FAILURE);
+        }
+
+#ifdef CUSTOM_DEBUG_ALG
+        printf("[%d] (%d; %d) My result matrix C is:\n", id, coords[0], coords[1]);
+        MatrixPrint(my_c, stdout);
+        printf("\n");
+#endif
+
+        if (CollectResult(
+
+        ) != EXIT_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to call result collection!\n", id);
+            __throw(EXIT_FAILURE);
+        }
     }
     __finally {
         if (my_a != NULL)
             MatrixDeallocate(&my_a);
-
         if (my_b != NULL)
             MatrixDeallocate(&my_b);
+        if (my_c != NULL)
+            MatrixDeallocate(&my_c);
 
         if (__error_code != EXIT_SUCCESS) {
             return __error_code;
@@ -78,8 +117,7 @@ int Master(
 
 int _MasterSetGrid(
     const int id,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight,
+    const unsigned int gridLength,
     const int coords[WORLD_DIMENSIONS],
     mat** matrix_a,
     mat** matrix_b,
@@ -96,20 +134,20 @@ int _MasterSetGrid(
     mat** partitions_b = NULL;
     
     __try {
-        int status = MatrixPartition(gridWidth, gridHeight, matrix_a, &partitions_a);
+        int status = MatrixPartition(gridLength, matrix_a, &partitions_a);
         if (status != EXIT_SUCCESS || partitions_a == NULL) {
             fprintf(stderr, "[%d] Failed to partition matrix a!\n", id);
             __throw(status);
         }
 
-        status = MatrixPartition(gridWidth, gridHeight, matrix_b, &partitions_b);
+        status = MatrixPartition(gridLength, matrix_b, &partitions_b);
         if (status != EXIT_SUCCESS || partitions_b == NULL) {
             fprintf(stderr, "[%d] Failed to partition matrix b!\n", id);
             __throw(status);
         }
 
-        _MasterRearrangePartitionsShiftLeft(partitions_a, gridWidth, gridHeight);
-        _MasterRearrangePartitionsShiftUp(partitions_b, gridWidth, gridHeight);
+        _MasterRearrangePartitionsShiftLeft(partitions_a, gridLength);
+        _MasterRearrangePartitionsShiftUp(partitions_b, gridLength);
 
         *my_a = partitions_a[0];
         partitions_a[0] = NULL;
@@ -117,15 +155,15 @@ int _MasterSetGrid(
         *my_b = partitions_b[0];
         partitions_b[0] = NULL;
 
-        for (int i = 0; i < gridHeight; i++)
-            for (int j = 0; j < gridWidth; j++) {
+        for (int i = 0; i < gridLength; i++)
+            for (int j = 0; j < gridLength; j++) {
                 if (i == 0 && j == 0)
                     continue;
 
                 int targetCoords[WORLD_DIMENSIONS] = { i, j };
 
-                mat* currentMatrix_a = partitions_a[i * gridWidth + j];
-                int status = _MasterSendSetupMatrix(
+                mat* currentMatrix_a = partitions_a[i * gridLength + j];
+                int status = _MasterSendMatrix(
                     currentMatrix_a,
                     targetCoords,
                     cartesianComm,
@@ -135,10 +173,10 @@ int _MasterSetGrid(
                     fprintf(stderr, "Failed to send setup matrix a of process (%d; %d)!\n", i, j);
                     __throw(EXIT_FAILURE);
                 }
-                MatrixDeallocate(&partitions_a[i * gridWidth + j]);
+                MatrixDeallocate(&partitions_a[i * gridLength + j]);
 
-                mat* currentMatrix_b = partitions_b[i * gridWidth + j];
-                status = _MasterSendSetupMatrix(
+                mat* currentMatrix_b = partitions_b[i * gridLength + j];
+                status = _MasterSendMatrix(
                     currentMatrix_b,
                     targetCoords,
                     cartesianComm,
@@ -148,12 +186,12 @@ int _MasterSetGrid(
                     fprintf(stderr, "Failed to send setup matrix b of process (%d; %d)!\n", i, j);
                     __throw(EXIT_FAILURE);
                 }
-                MatrixDeallocate(&partitions_b[i * gridWidth + j]);
+                MatrixDeallocate(&partitions_b[i * gridLength + j]);
             }
     }
     __finally {
-        _MasterFreePartitions(&partitions_a, gridWidth * gridHeight);            
-        _MasterFreePartitions(&partitions_b, gridWidth * gridHeight);
+        _MasterFreePartitions(&partitions_a, gridLength * gridLength);            
+        _MasterFreePartitions(&partitions_b, gridLength * gridLength);
 
         if (__error_code != EXIT_SUCCESS) {
             return EXIT_FAILURE;
@@ -165,45 +203,43 @@ int _MasterSetGrid(
 
 void _MasterRearrangePartitionsShiftLeft(
     mat** partition,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight
+    const unsigned int gridLength
 ) {
-    assert(gridWidth > 0 && gridHeight > 0);
+    assert(gridLength > 0);
     assert(partition != NULL);
 
-    for (int i = 1; i < gridHeight; i++) {
+    for (int i = 1; i < gridLength; i++) {
         // Shift Row i left by i positions
         for (int shift = 0; shift < i; shift++) {
-            mat* first = partition[i * gridWidth];
-            for (int j = 0; j < gridWidth - 1; j++) {
-                partition[i * gridWidth + j] = partition[i * gridWidth + j + 1];
+            mat* first = partition[i * gridLength];
+            for (int j = 0; j < gridLength - 1; j++) {
+                partition[i * gridLength + j] = partition[i * gridLength + j + 1];
             }
-            partition[i * gridWidth + gridWidth - 1] = first;
+            partition[i * gridLength + gridLength - 1] = first;
         }
     }
 }
 
 void _MasterRearrangePartitionsShiftUp(
     mat** partition,
-    const unsigned int gridWidth,
-    const unsigned int gridHeight
+    const unsigned int gridLength
 ) {
-    assert(gridWidth > 0 && gridHeight > 0);
+    assert(gridLength > 0);
     assert(partition != NULL);
 
-    for (int j = 1; j < gridWidth; j++) {
+    for (int j = 1; j < gridLength; j++) {
         // Shift Column j up by j positions
         for (int shift = 0; shift < j; shift++) {
             mat* top = partition[j];
-            for (int i = 0; i < gridHeight - 1; i++) {
-                partition[i * gridWidth + j] = partition[(i + 1) * gridWidth + j];
+            for (int i = 0; i < gridLength - 1; i++) {
+                partition[i * gridLength + j] = partition[(i + 1) * gridLength + j];
             }
-            partition[(gridHeight - 1) * gridWidth + j] = top;
+            partition[(gridLength - 1) * gridLength + j] = top;
         }
     }
 }
 
-int _MasterSendSetupMatrix(
+int _MasterSendMatrix(
     const mat* matrix,
     const int targetCoords[WORLD_DIMENSIONS],
     const MPI_Comm* cartesianComm,
