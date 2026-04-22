@@ -43,7 +43,7 @@ int MatrixPartition(
     mat*** output
 );
 
-void MatrixElementwiseMultiply(
+void MatrixMultiplyAccumulate(
     mat* a,
     mat* b,
     mat* r

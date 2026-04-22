@@ -94,7 +94,7 @@ int CanonAlgorithm(
         }
 
         for (int i = 0; i < numberOfIterations; i++) {
-            MatrixElementwiseMultiply(a, b, *c);
+            MatrixMultiplyAccumulate(a, b, *c);
             _CannonTick(id, a, MATRIX_A_TAG, Left, cartesianComm);
             _CannonTick(id, b, MATRIX_B_TAG, Up, cartesianComm);
         }        

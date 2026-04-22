@@ -186,7 +186,7 @@ int MatrixPartition(
     return EXIT_SUCCESS;
 }
 
-void MatrixElementwiseMultiply(
+void MatrixMultiplyAccumulate(
     mat *a,
     mat *b,
     mat *r
@@ -196,9 +196,10 @@ void MatrixElementwiseMultiply(
     assert(a->cols == b->cols && a->rows == b->rows);
     assert(a->cols == r->cols && a->rows == r->rows);
     
-    for (int i = 0; i < r->rows; i++)
-        for (int j = 0; j < r->cols; j++)
-            *MatrixAt(r, i, j) = *MatrixAt(r, i, j) + *MatrixAt(a, i, j) * *MatrixAt(b, i, j);
+    for (int i = 0; i < a->rows; i++)
+        for (int k = 0; k < a->cols; k++)
+            for (int j = 0; j < b->cols; j++)
+            *MatrixAt(r, i, j) = *MatrixAt(r, i, j) + *MatrixAt(a, i, k) * *MatrixAt(b, k, j);
 }
 
 mat* _MatrixCloneSubMatrix(
