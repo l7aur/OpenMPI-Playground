@@ -51,7 +51,7 @@ for epoch in {1..25}; do
                 echo "$epoch, $p, $file_a, $file_b, $EXEC_TIME" >> $RESULT_FILE
             fi
 
-            sleep 2
+            sleep 3
 
         done
     done

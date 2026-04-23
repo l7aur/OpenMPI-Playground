@@ -8,6 +8,8 @@ int main(const int argc, const char* argv[])
 {
     mat* matrix_a = NULL;
     mat* matrix_b = NULL;
+    int rank = 0;
+    MPI_Comm cartesianComm = MPI_COMM_NULL;
 
     __try {
         if (MPI_Init(NULL, NULL) != MPI_SUCCESS) {
@@ -28,7 +30,6 @@ int main(const int argc, const char* argv[])
         }
 
         int periods[WORLD_DIMENSIONS] = { 1, 1 };
-        MPI_Comm cartesianComm;
         if (MPI_Cart_create(
             MPI_COMM_WORLD,
             WORLD_DIMENSIONS,
@@ -41,7 +42,6 @@ int main(const int argc, const char* argv[])
             __throw(EXIT_FAILURE);
         }
 
-        int rank = 0;
         if (MPI_Comm_rank(cartesianComm, &rank) != MPI_SUCCESS) {
             fprintf(stderr, "Failed to retrieve rank of process!\n");
             __throw(EXIT_FAILURE);
@@ -118,6 +118,16 @@ int main(const int argc, const char* argv[])
         }
     }
     __finally {
+        if (cartesianComm != MPI_COMM_NULL && MPI_Comm_free(&cartesianComm) != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to free communicator!\n", rank);
+        }
+
+        if (matrix_a != NULL)
+            free(matrix_a), matrix_a = NULL;
+
+        if (matrix_b != NULL)
+            free(matrix_b), matrix_b = NULL;
+        
         if (__error_code != EXIT_SUCCESS) {
             int flag = 0;
             if (MPI_Initialized(&flag) != MPI_SUCCESS) {
@@ -128,12 +138,6 @@ int main(const int argc, const char* argv[])
             }
             return __error_code;
         }
-
-        if (matrix_a != NULL)
-            free(matrix_a), matrix_a = NULL;
-
-        if (matrix_b != NULL)
-            free(matrix_b), matrix_b = NULL;
     }
 
     if (MPI_Finalize() != MPI_SUCCESS) 
