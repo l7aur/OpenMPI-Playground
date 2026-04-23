@@ -9,7 +9,7 @@
 
 // #define CUSTOM_DEBUG
 // #define CUSTOM_DEBUG_ALG
-#define PRINT_RESULT
+// #define PRINT_RESULT
 
 #define WORLD_DIMENSIONS        2
 #define MPI_ALLOW_REORDER       1

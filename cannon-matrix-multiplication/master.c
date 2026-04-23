@@ -63,7 +63,7 @@ int Master(
     mat * my_c = NULL;
     mat* result = NULL;
     __try {
-        if (_MasterSetGrid(
+        int status = _MasterSetGrid(
             id,
             gridLength,
             coords, 
@@ -72,7 +72,8 @@ int Master(
             cartesianComm, 
             &my_a, 
             &my_b
-        ) != EXIT_SUCCESS) {
+        );
+        if (status != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Setting the grid up failed!\n", id);
             __throw(EXIT_FAILURE);
         }
@@ -84,6 +85,13 @@ int Master(
         MatrixPrint(my_b, stdout);
 #endif
 
+        // start of execution
+        status = MPI_Barrier(MPI_COMM_WORLD);
+        if (status != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to set barrier!\n", id);
+            __throw(status);
+        } 
+        double t_start = MPI_Wtime();
         if (CanonAlgorithm(
             id,
             my_a,
@@ -102,13 +110,14 @@ int Master(
         printf("\n");
 #endif
 
-        if (_MasterCollectResults(
+        status = _MasterCollectResults(
             id,
             gridLength,
             &my_c,
             &result,
             cartesianComm
-        ) != EXIT_SUCCESS) {
+        );
+        if (status != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Failed to call result collection!\n", id);
             __throw(EXIT_FAILURE);
         }
@@ -118,6 +127,14 @@ int Master(
         MatrixPrint(result, stdout);
 #endif
 
+        // end of execution
+        status = MPI_Barrier(MPI_COMM_WORLD);
+        if (status != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to unset barrier!\n", id);
+            __throw(status);
+        }
+        double t_end = MPI_Wtime();
+        fprintf(stdout, "[%d] Execution time: %lf seconds\n", id, t_end - t_start);
     }
     __finally {
         if (my_a != NULL)

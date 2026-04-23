@@ -48,6 +48,12 @@ int Slave(
         printf("[%d] (%d; %d) My setup matrix B is:\n", id, coords[0], coords[1]);
         MatrixPrint(my_b, stdout);
 #endif
+        // start of execution
+        int status = MPI_Barrier(MPI_COMM_WORLD);
+        if (status != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to set barrier!\n", id);
+            __throw(status);
+        }
 
         if (CanonAlgorithm(
             id,
@@ -74,6 +80,13 @@ int Slave(
         ) != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Failed to call result collection!\n", id);
             __throw(EXIT_FAILURE);
+        }
+
+        // end of execution
+        status = MPI_Barrier(MPI_COMM_WORLD);
+        if (status != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to unset barrier!\n", id);
+            __throw(status);
         }
     }
     __finally {
