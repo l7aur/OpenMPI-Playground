@@ -80,6 +80,20 @@ int main(const int argc, const char* argv[])
                 __throw(EXIT_FAILURE);
             }
 
+            if (IsPaddingNeeded(matrix_a, dims[0]) == TRUE && PadWithZeroes(&matrix_a, dims[0]) != EXIT_SUCCESS) {
+                fprintf(stderr, "Failed to pad matrix A!\n");
+                __throw(EXIT_FAILURE);
+            }
+            
+            if (IsPaddingNeeded(matrix_b, dims[0]) == TRUE  && PadWithZeroes(&matrix_b, dims[0]) != EXIT_SUCCESS) {
+                fprintf(stderr, "Failed to pad matrix A!\n");
+                __throw(EXIT_FAILURE);
+            }
+
+#ifdef CUSTOM_DEBUG
+            printf("A: %dx%d B: %dx%d\n", matrix_a->rows, matrix_a->cols, matrix_b->rows, matrix_b->cols);
+#endif
+
             status = Master(
                 rank,
                 dims[0],

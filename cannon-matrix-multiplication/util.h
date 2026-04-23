@@ -19,6 +19,10 @@
 #define MATRIX_B_TAG            20
 #define MATRIX_C_TAG            30
 
+#define BOOL                    int
+#define TRUE                    1
+#define FALSE                   0
+
 #define __try           int __error_code = EXIT_SUCCESS;       
 #define __throw(X)      { __error_code = (X); goto final; }
 #define __finally       final:
@@ -40,4 +44,14 @@ int CanonAlgorithm(
     const int numberOfIterations,
     MPI_Comm* cartesianComm,
     mat** c /* OUT */
+);
+
+BOOL IsPaddingNeeded(
+    mat * m,
+    const unsigned int gridLength
+);
+
+int PadWithZeroes(
+    mat** matrix,
+    const unsigned int gridLength
 );

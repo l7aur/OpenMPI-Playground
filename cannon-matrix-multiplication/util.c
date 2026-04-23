@@ -207,3 +207,49 @@ int _CannonTickLeft(
 
     return EXIT_SUCCESS;
 }
+
+BOOL IsPaddingNeeded(
+    mat * m,
+    const unsigned int gridLength
+) {
+    assert(m != NULL);
+    assert(gridLength > 0);
+
+    if (m->cols % gridLength != 0)
+        return TRUE;
+    
+    if (m->rows % gridLength != 0)
+        return TRUE;
+
+    return FALSE; 
+}
+
+int PadWithZeroes(
+    mat** matrix,
+    const unsigned int gridLength
+) {
+    assert(matrix != NULL && *matrix != NULL);
+    assert(gridLength > 0);
+
+    mat* m = *matrix;
+
+    int blockRows = m->rows / gridLength;
+    int newRows = gridLength * (blockRows + 1);
+    
+    int blockCols = m->cols / gridLength;
+    int newCols = gridLength * (blockCols + 1);
+
+    mat * newM = MatrixAllocate(
+        newRows,
+        newCols
+    );
+    if (newM == NULL) {
+        fprintf(stderr, "Failed to pad matrix!\n");
+        return EXIT_FAILURE;
+    }
+
+    MatrixFill(newM, 0, 0, m->data, m->rows, m->cols);
+    MatrixDeallocate(matrix);
+    *matrix = newM;
+    return EXIT_SUCCESS;
+}
