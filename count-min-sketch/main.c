@@ -12,7 +12,7 @@
 int main(int argc, char* argv[])
 {
     char input_file_path[INPUT_FILE_PATH_MAX_SIZE];
-    memset(&input_file_path, 0, sizeof(char) * INPUT_FILE_PATH_MAX_SIZE);    
+    memset(&input_file_path, 0, sizeof(char) * INPUT_FILE_PATH_MAX_SIZE);
     int number_of_hash_functions = 0;
     int number_of_counters = 0;
 
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
         int status = slave(
             world_rank,
             number_of_hash_functions,
-            number_of_counters    
+            number_of_counters
         );
         if (status < 0)
             MPI_Abort(MPI_COMM_WORLD, SLAVE_FAILED_ERROR_CODE);

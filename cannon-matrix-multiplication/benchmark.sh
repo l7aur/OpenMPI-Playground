@@ -16,7 +16,7 @@ fi
 
 echo "Compilation succeeded!"
 
-echo "epoch, number_of_processes, input_file_a, input_file_b, execution_time" > $RESULT_FILE
+echo "epoch,number_of_processes,input_file_a,input_file_b,execution_time" > $RESULT_FILE
 
 echo "Starting benchmarking..."
 
@@ -46,9 +46,9 @@ for epoch in {1..25}; do
 
             if [ -z "$EXEC_TIME" ]; then
                 echo "[ERROR] Failed to grep execution time"
-                echo "$epoch, $p, $file_a, $file_b, err" >> $RESULT_FILE
+                echo "$epoch,$p,$file_a,$file_b,err" >> $RESULT_FILE
             else
-                echo "$epoch, $p, $file_a, $file_b, $EXEC_TIME" >> $RESULT_FILE
+                echo "$epoch,$p,$file_a,$file_b,$EXEC_TIME" >> $RESULT_FILE
             fi
 
             sleep 3

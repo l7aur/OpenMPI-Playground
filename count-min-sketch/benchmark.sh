@@ -16,7 +16,7 @@ if [ $? -ne 0 ]; then
 fi
 echo "Compilation succeeded!"
 
-echo "epoch, number_of_processes, input_file, execution_time" > $RESULT_FILE
+echo "epoch,number_of_processes,input_file,execution_time" > $RESULT_FILE
 
 echo "Starting benchmarking..."
 
@@ -36,17 +36,17 @@ for epoch in {1..50}; do
 
             RAW_OUTPUT=$(mpiexec --use-hwthread-cpus -n $p $EXEC $NUMBER_OF_HASH_FUNCTIONS $NUMBER_OF_COUNTERS $data)
             echo "$RAW_OUTPUT"
-            
+
             EXEC_TIME=$(echo "$RAW_OUTPUT" | grep "\[0\] Execution time" | grep -oP '\d+\.\d+')
             if [ -z "$EXEC_TIME" ]; then
                 echo "[ERROR] Failed to grep execution time"
-                echo "$epoch, $p, $data, err" >> $RESULT_FILE
+                echo "$epoch,$p,$data,err" >> $RESULT_FILE
             else
-                echo "$epoch, $p, $data, $EXEC_TIME" >> $RESULT_FILE
+                echo "$epoch,$p,$data,$EXEC_TIME" >> $RESULT_FILE
             fi
 
-            sleep 2
-        
+            sleep 3
+
         done
     done
 done

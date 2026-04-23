@@ -40,7 +40,7 @@ int slave(
             fprintf(stderr, "[%d] Failed to set barrier!\n", id);
             __throw(status);
         }
-        
+
         status = _RetrieveNumberOfNumbers(id, &number_of_numbers);
         if (status < 0) {
             fprintf(stderr, "[%d] Retrieving seed value failed!\n", id);

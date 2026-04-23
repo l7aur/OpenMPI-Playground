@@ -61,7 +61,7 @@ int master(
         if (status != MPI_SUCCESS) {
             fprintf(stderr, "[%d] Failed to set barrier!\n", id);
             __throw(status);
-        } 
+        }
         double t_start = MPI_Wtime();
 
         status = _NotifySlavesOfNumbersSize(id, number_of_numbers, world_size);
@@ -75,7 +75,7 @@ int master(
             fprintf(stderr, "[%d] Failed to partition data to slaves!\n", id);
             __throw(MASTER_FAILED_ERROR_CODE);
         }
-    
+
         status = do_task(id, receive_buffer, receive_number_of_numbers, number_of_counters, number_of_hash_functions, &sketch);
         if (status != 0) {
             fprintf(stderr,  "[%d] Failed to do task!\n", id);
@@ -104,7 +104,7 @@ int master(
             free(numbers), numbers = NULL, number_of_numbers = 0;
         if (receive_buffer != NULL)
             free(receive_buffer), receive_buffer = NULL, receive_number_of_numbers = 0;
-        
+
         count_min_sketch_free(&sketch);
     }
 
@@ -229,7 +229,7 @@ int _PartitionDataToSlaves(
 
     int * send_counts = NULL;
     int * offsets = NULL;
-    __try {    
+    __try {
         send_counts = (int*)malloc(sizeof(int) * world_size);
         if (send_counts == NULL) {
             fprintf(stderr, "[%d] Failed to allocate send_counts array!\n", id);
@@ -274,7 +274,7 @@ int _PartitionDataToSlaves(
     __finally {
         if (send_counts != NULL)
             free(send_counts), send_counts = NULL;
-    
+
         if (offsets != NULL)
             free(offsets), offsets = NULL;
 

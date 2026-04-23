@@ -68,7 +68,7 @@ int main(const int argc, const char* argv[])
                     __throw(EXIT_FAILURE);
                 }
 
-            if (Parse(argc, argv, dims[0], &matrix_a, &matrix_b) != EXIT_SUCCESS 
+            if (Parse(argc, argv, dims[0], &matrix_a, &matrix_b) != EXIT_SUCCESS
                 || matrix_a == NULL || matrix_b == NULL) {
                 printf("Parsing failed: matrix_a=%p, matrix_b=%p!\n", matrix_a, matrix_b);
                 __throw(EXIT_FAILURE);
@@ -84,7 +84,7 @@ int main(const int argc, const char* argv[])
                 fprintf(stderr, "Failed to pad matrix A!\n");
                 __throw(EXIT_FAILURE);
             }
-            
+
             if (IsPaddingNeeded(matrix_b, dims[0]) == TRUE  && PadWithZeroes(&matrix_b, dims[0]) != EXIT_SUCCESS) {
                 fprintf(stderr, "Failed to pad matrix A!\n");
                 __throw(EXIT_FAILURE);
@@ -127,7 +127,7 @@ int main(const int argc, const char* argv[])
 
         if (matrix_b != NULL)
             free(matrix_b), matrix_b = NULL;
-        
+
         if (__error_code != EXIT_SUCCESS) {
             int flag = 0;
             if (MPI_Initialized(&flag) != MPI_SUCCESS) {
@@ -140,7 +140,7 @@ int main(const int argc, const char* argv[])
         }
     }
 
-    if (MPI_Finalize() != MPI_SUCCESS) 
+    if (MPI_Finalize() != MPI_SUCCESS)
         return EXIT_FAILURE;
 
     return EXIT_SUCCESS;

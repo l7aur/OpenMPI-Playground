@@ -45,10 +45,10 @@ void MatrixDeallocate(
     mat** matrix
 ) {
     assert(*matrix != NULL);
-    
+
     if ((*matrix)->data != NULL)
         free((*matrix)->data), (*matrix)->data = NULL;
-    
+
     free(*matrix), (*matrix) = NULL;
 }
 
@@ -195,7 +195,7 @@ void MatrixMultiplyAccumulate(
     assert(a != NULL && b != NULL);
     assert(a->cols == b->cols && a->rows == b->rows);
     assert(a->cols == r->cols && a->rows == r->rows);
-    
+
     for (int i = 0; i < a->rows; i++)
         for (int k = 0; k < a->cols; k++)
             for (int j = 0; j < b->cols; j++)
