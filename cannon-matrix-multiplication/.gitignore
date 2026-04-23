@@ -1,4 +1,4 @@
 main
-matrix_multiply
+test/matrix_multiply
 dataset/
 results.csv
