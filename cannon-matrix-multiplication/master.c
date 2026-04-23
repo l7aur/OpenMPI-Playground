@@ -37,6 +37,14 @@ void _MasterFreePartitions(
     const unsigned int numberOfPartitions
 );
 
+int _MasterCollectResults(
+    const int id,
+    const unsigned int gridLength,
+    mat** my_res,
+    mat** result,
+    MPI_Comm* cartesianComm
+);
+
 int Master(
     const int id,
     const unsigned int gridLength,
@@ -53,6 +61,7 @@ int Master(
     mat * my_a = NULL;
     mat * my_b = NULL;
     mat * my_c = NULL;
+    mat* result = NULL;
     __try {
         if (_MasterSetGrid(
             id,
@@ -93,12 +102,22 @@ int Master(
         printf("\n");
 #endif
 
-        if (CollectResult(
-
+        if (_MasterCollectResults(
+            id,
+            gridLength,
+            &my_c,
+            &result,
+            cartesianComm
         ) != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Failed to call result collection!\n", id);
             __throw(EXIT_FAILURE);
         }
+
+#ifdef PRINT_RESULT
+        printf("Result of computation:\n");
+        MatrixPrint(result, stdout);
+#endif
+
     }
     __finally {
         if (my_a != NULL)
@@ -107,6 +126,8 @@ int Master(
             MatrixDeallocate(&my_b);
         if (my_c != NULL)
             MatrixDeallocate(&my_c);
+        if (result != NULL)
+            MatrixDeallocate(&result);
 
         if (__error_code != EXIT_SUCCESS) {
             return __error_code;
@@ -154,7 +175,8 @@ int _MasterSetGrid(
         
         *my_b = partitions_b[0];
         partitions_b[0] = NULL;
-
+        
+        // todo convert to MPI_Scatter
         for (int i = 0; i < gridLength; i++)
             for (int j = 0; j < gridLength; j++) {
                 if (i == 0 && j == 0)
@@ -313,4 +335,93 @@ void _MasterFreePartitions(
         MatrixDeallocate(partitions[i]);
     }
     free(*partitions), *partitions = NULL;
+}
+
+int _MasterCollectResults(
+    const int id,
+    const unsigned int gridLength,
+    mat** my_res,
+    mat** result,
+    MPI_Comm* cartesianComm
+) {
+    assert(result != NULL && *result == NULL);
+    assert(my_res != NULL);
+    assert(cartesianComm != NULL);
+    assert(gridLength > 0);
+
+    int * auxBuffer = NULL;
+    __try {
+
+        auxBuffer = (int*)malloc(sizeof(int) * (*my_res)->rows * (*my_res)->cols);
+        if (auxBuffer == NULL) {
+            fprintf(stderr, "[%d] Failed to allocate aux buffer for result!\n", id);
+            __throw(EXIT_FAILURE);    
+        }
+
+        *result = MatrixAllocate((*my_res)->rows * gridLength, (*my_res)->cols * gridLength);
+        if (*result == NULL) {
+            fprintf(stderr, "[%d] Failed to allocate result buffer!\n", id);
+            __throw(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < gridLength; ++i)
+            for (int j = 0; j < gridLength; ++j) {
+                if (i == 0 && j == 0) {
+                    MatrixFill(
+                        *result,
+                        i * (*my_res)->rows,
+                        j * (*my_res)->cols,
+                        (*my_res)->data,
+                        (*my_res)->rows,
+                        (*my_res)->cols
+                    );
+                    continue;
+                }
+                
+                int coords[WORLD_DIMENSIONS] = { i, j };
+                int source = -1;
+                int status = MPI_Cart_rank(*cartesianComm, coords, &source);
+                if (status != MPI_SUCCESS) {
+                    fprintf(stderr, "[%d] Failed to retrieve rank for (%d, %d)!\n", id, i, j);
+                    __throw(EXIT_FAILURE);
+                }
+
+                status = MPI_Recv(
+                    auxBuffer,
+                    (*my_res)->rows * (*my_res)->cols,
+                    MPI_INT,
+                    source,
+                    MATRIX_C_TAG,
+                    *cartesianComm,
+                    MPI_STATUS_IGNORE
+                );
+                if (status != MPI_SUCCESS) {
+                    fprintf(stderr, "[%d] Failed to retrieve data from (%d; %d)!\n", id, coords[0], coords[1]);
+                    return EXIT_FAILURE;
+                }
+                
+                MatrixFill(
+                    *result,
+                    i * (*my_res)->rows,
+                    j * (*my_res)->cols,
+                    auxBuffer,
+                    (*my_res)->rows,
+                    (*my_res)->cols
+                );
+            }
+    }
+    __finally {
+        if (auxBuffer != NULL)
+            free(auxBuffer);
+
+        if (__error_code != EXIT_SUCCESS) {
+            if (*result != NULL)
+                MatrixDeallocate(result);
+            return EXIT_FAILURE;
+        }
+    }
+
+    MatrixDeallocate(my_res);
+
+    return EXIT_SUCCESS;
 }

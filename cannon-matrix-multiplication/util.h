@@ -8,7 +8,8 @@
 #include "mat.h"
 
 // #define CUSTOM_DEBUG
-#define CUSTOM_DEBUG_ALG
+// #define CUSTOM_DEBUG_ALG
+#define PRINT_RESULT
 
 #define WORLD_DIMENSIONS        2
 #define MPI_ALLOW_REORDER       1
@@ -16,6 +17,7 @@
 
 #define MATRIX_A_TAG            10
 #define MATRIX_B_TAG            20
+#define MATRIX_C_TAG            30
 
 #define __try           int __error_code = EXIT_SUCCESS;       
 #define __throw(X)      { __error_code = (X); goto final; }
@@ -38,8 +40,4 @@ int CanonAlgorithm(
     const int numberOfIterations,
     MPI_Comm* cartesianComm,
     mat** c /* OUT */
-);
-
-int CollectResult(
-
 );

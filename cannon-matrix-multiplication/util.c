@@ -207,10 +207,3 @@ int _CannonTickLeft(
 
     return EXIT_SUCCESS;
 }
-
-int CollectResult(
-
-) {
-
-    return EXIT_SUCCESS;
-}

@@ -10,6 +10,12 @@ mat* _SlaveReceiveSetupMatrix(
     const int tag
 );
 
+int _SlaveSendResult(
+    const int id,
+    mat* result,
+    MPI_Comm* cartesianComm
+);
+
 int Slave(
     const int id,
     const unsigned int gridLength,
@@ -61,8 +67,10 @@ int Slave(
         printf("\n");
 #endif
 
-        if (CollectResult(
-
+        if (_SlaveSendResult(
+            id,
+            my_c,
+            cartesianComm
         ) != EXIT_SUCCESS) {
             fprintf(stderr, "[%d] Failed to call result collection!\n", id);
             __throw(EXIT_FAILURE);
@@ -138,4 +146,35 @@ mat* _SlaveReceiveSetupMatrix(
     }
 
     return matrix;
+}
+
+int _SlaveSendResult(
+    const int id,
+    mat * result,
+    MPI_Comm* cartesianComm
+) {
+    assert(result != NULL);
+
+    __try {
+        int status = MPI_Send(
+            result->data,
+            result->cols * result->rows,
+            MPI_INT,
+            0,
+            MATRIX_C_TAG,
+            *cartesianComm
+        );
+        if (status != MPI_SUCCESS) {
+            fprintf(stderr, "[%d] Failed to send results!\n", id);
+            __throw(EXIT_FAILURE);
+        }
+    }
+    __finally {
+        if (__error_code == EXIT_FAILURE) {
+
+            return EXIT_FAILURE;
+        }
+    }
+
+    return EXIT_SUCCESS;
 }

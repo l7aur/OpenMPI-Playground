@@ -202,6 +202,23 @@ void MatrixMultiplyAccumulate(
             *MatrixAt(r, i, j) = *MatrixAt(r, i, j) + *MatrixAt(a, i, k) * *MatrixAt(b, k, j);
 }
 
+void MatrixFill(
+    mat *matrix,
+    const unsigned int iStart,
+    const unsigned int jStart,
+    int *data,
+    const unsigned int width,
+    const unsigned int height
+)
+{
+    assert(matrix != NULL);
+    assert(iStart + height <= matrix->rows && jStart + width <= matrix->cols);
+
+    for (int i = 0; i < height; i++)
+        for (int j = 0; j < width; j++)
+            *MatrixAt(matrix, iStart + i, jStart + j) = data[i * width + j];
+}
+
 mat* _MatrixCloneSubMatrix(
     const mat* input,
     const unsigned int rowStart,

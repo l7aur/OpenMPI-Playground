@@ -48,3 +48,12 @@ void MatrixMultiplyAccumulate(
     mat* b,
     mat* r
 );
+
+void MatrixFill(
+    mat* matrix,
+    const unsigned int iStart,
+    const unsigned int jStart,
+    int* data,
+    const unsigned int width,
+    const unsigned int height
+);
