@@ -2,8 +2,8 @@
 
 SOURCES=("main.c" "master.c" "slave.c" "util.c" "mat.c")
 EXEC="main"
-INPUT_FILES_A=("dataset/A10.txt" "dataset/A20.txt" "dataset/A48.txt" "dataset/A50.txt")
-INPUT_FILES_B=("dataset/B10.txt" "dataset/B20.txt" "dataset/B48.txt" "dataset/B50.txt")
+INPUT_FILES_A=("dataset/A10.txt" "dataset/A20.txt" "dataset/A48.txt" "dataset/A50.txt" "dataset/A250.txt" "dataset/A500.txt")
+INPUT_FILES_B=("dataset/B10.txt" "dataset/B20.txt" "dataset/B48.txt" "dataset/B50.txt" "dataset/B250.txt" "dataset/B500.txt")
 RESULT_FILE="results.csv"
 
 echo "Compiling..."
