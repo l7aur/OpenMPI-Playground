@@ -1,4 +1,5 @@
 #include "global.h"
+#include "parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,18 +11,29 @@ int main(int argc, char* argv[]) {
         unsigned int downsampling_rate = 0;
         unsigned int finest_grid_size = 0;
 
-        global_ocean = OceanAllocate(
+        if (Parser(
+            argc,
+            argv,
+            &number_of_levels,
+            &downsampling_rate,
+            &finest_grid_size
+        ) != EXIT_SUCCESS) {
+            fprintf(stderr, "Failed to parse the command line arguments!\n");
+            __throw(EXIT_FAILURE);
+        };
+
+        if ((global_ocean = OceanAllocate(
             number_of_levels,
             downsampling_rate,
             finest_grid_size
-        );
-        if (global_ocean == NULL) {
+        )) == NULL) {
             fprintf(stderr, "Failed to allocate the global ocean!\n");
             return EXIT_FAILURE;
         }
 
-        int status = OceanInit(global_ocean);
-        if (status != EXIT_SUCCESS) {
+        if (OceanInit(
+            global_ocean
+        ) != EXIT_SUCCESS) {
             fprintf(stderr, "Failed to init the global ocean!\n");
             __throw(EXIT_FAILURE);
         }

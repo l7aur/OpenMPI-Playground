@@ -16,7 +16,7 @@ void _OceanLevelInit(
     matrix* m
 );
 
-void _OceanSubsampleLevel(
+void _OceanDownsampleLevel(
     matrix* to_be_sampled,
     matrix* output
 );
@@ -27,8 +27,10 @@ ocean* OceanAllocate(
     const unsigned int finest_grid_size
 ) {
     assert(number_of_levels > 0);
+    assert(downsampling_rate > 1);
     assert(finest_grid_size & (finest_grid_size - 1) == 0);
     assert(downsampling_rate & (downsampling_rate - 1) == 0);
+    assert((finest_grid_size >> ((number_of_levels - 1) * (unsigned int)log2(downsampling_rate))) > 0);
 
     ocean * o = (ocean*)malloc(sizeof(ocean) * 1);
     if (o == NULL) {
@@ -140,17 +142,17 @@ void _OceanLevelInit(
 }
 
 /**
- * @brief Subsamples a level to generate another. Both input parameters must be
+ * @brief Downsamples a level to generate another. Both input parameters must be
  * initialized with the required dimensions.
  * @note The ratio between dimensions + 1 represents the subsampling resolution.
- * This method uses an averages subsampling technique: the further away the coordinates
+ * This method uses an averages downsampling technique: the further away the coordinates
  * from the center of the sampling area, the smaller its weight to the final result.
  * The weights are powers of 2, the center of the sampling area receives a weight of 0.25,
  * further points receive 0.25 * 2^(-d(center, point)).
  * @param to_be_sampled finer ocean level
  * @param output coarser ocean level
  */
-void _OceanSubsampleLevel(
+void _OceanDownsampleLevel(
     matrix* to_be_sampled,
     matrix* output
 ) {
