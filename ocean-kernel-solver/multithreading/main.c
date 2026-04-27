@@ -10,13 +10,15 @@ int main(int argc, char* argv[]) {
         unsigned int number_of_levels = 0;
         unsigned int downsampling_rate = 0;
         unsigned int finest_grid_size = 0;
+        unsigned int number_of_workers = 0;
 
         if (Parser(
             argc,
             argv,
             &number_of_levels,
             &downsampling_rate,
-            &finest_grid_size
+            &finest_grid_size,
+            &number_of_workers
         ) != EXIT_SUCCESS) {
             fprintf(stderr, "Failed to parse the command line arguments!\n");
             __throw(EXIT_FAILURE);
@@ -25,7 +27,8 @@ int main(int argc, char* argv[]) {
         if ((global_ocean = OceanAllocate(
             number_of_levels,
             downsampling_rate,
-            finest_grid_size
+            finest_grid_size,
+            number_of_workers
         )) == NULL) {
             fprintf(stderr, "Failed to allocate the global ocean!\n");
             return EXIT_FAILURE;

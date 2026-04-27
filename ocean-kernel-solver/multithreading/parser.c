@@ -10,19 +10,21 @@ int Parser(
     char * argv[],
     unsigned int* number_of_levels,
     unsigned int* downsampling_rate,
-    unsigned int* finest_grid_size
+    unsigned int* finest_grid_size,
+    unsigned int* number_of_workers
 ) {
     assert(argc > 0);
     assert(argv != NULL);
 
-    if (argc != 4) {
-        fprintf(stderr, "Usage ./main <number_of_levels>, <downsampling_rate> <finest_grid_size>\n");
+    if (argc != 5) {
+        fprintf(stderr, "Usage ./main <number_of_workers> <number_of_levels>, <downsampling_rate> <finest_grid_size>\n");
         return EXIT_FAILURE;
     }
 
     *number_of_levels = atoi(argv[1]);
     *downsampling_rate = atoi(argv[2]);
     *finest_grid_size = atoi(argv[3]);
+    *number_of_workers = atoi(argv[4]);
 
     if (*number_of_levels < 0) {
         fprintf(stderr, "<number_of_levels> must be greater than 0!\n");
@@ -56,6 +58,11 @@ int Parser(
             "%dx%d matrix by %d for %d times and still obtain a matrix\n",
             *finest_grid_size, *finest_grid_size, *downsampling_rate, *number_of_levels
         );
+        return EXIT_FAILURE;
+    }
+
+    if (*number_of_workers < 1) {
+        fprintf(stderr, "<number_of_workers> must be greater than 0!\n");
         return EXIT_FAILURE;
     }
 

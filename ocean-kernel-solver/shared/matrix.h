@@ -23,8 +23,34 @@ MATRIX_NNNER_DATA_TYPE* MatrixAddressAt(
     const unsigned int col
 );
 
-void MatrixSetPadding(
+void MatrixSetUpPadding(
     const matrix* m,
     const unsigned int border_padding,
     const MATRIX_NNNER_DATA_TYPE padding_value
+);
+
+void MatrixSetDownPadding(
+    const matrix* m,
+    const unsigned int border_padding,
+    const MATRIX_NNNER_DATA_TYPE padding_value
+);
+
+void MatrixSetLeftPadding(
+    const matrix* m,
+    const unsigned int border_padding,
+    const MATRIX_NNNER_DATA_TYPE padding_value
+);
+
+void MatrixSetRightPadding(
+    const matrix* m,
+    const unsigned int border_padding,
+    const MATRIX_NNNER_DATA_TYPE padding_value
+);
+
+void MatrixInit(
+    matrix* m,
+    const unsigned int level_r,
+    const unsigned int level_c,
+    const unsigned int level_number_of_elements,
+    const unsigned int border_padding
 );
