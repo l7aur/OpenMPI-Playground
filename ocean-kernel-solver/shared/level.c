@@ -111,6 +111,9 @@ void LevelInit(
     unsigned int level_c = 0; // do not count border
     for (unsigned int r = 0; r < l->rows; r++) {
         for (unsigned int c = 0; c < l->cols; c++) {
+            assert(LevelMatrixAt(l, 0, 0)->cols = LevelMatrixAt(l, r, c)->cols);
+            assert(LevelMatrixAt(l, 0, 0)->rows = LevelMatrixAt(l, r, c)->rows);
+
             matrix* current = LevelMatrixAt(l, r, c);
             MatrixInit(current, level_r, level_c, l->rows * l->cols, LEVEL_PADDING_SIZE);
             level_c += current->cols - 2 * LEVEL_PADDING_SIZE;
@@ -136,8 +139,6 @@ void LevelDownsampleLevel(
     assert((to_be_sampled->rows - LEVEL_PADDING_SIZE) % (output->rows - LEVEL_PADDING_SIZE) == 0);
     assert((to_be_sampled->cols - LEVEL_PADDING_SIZE) % (output->cols - LEVEL_PADDING_SIZE) == 0);
 
-    MatrixSetPadding(output, LEVEL_PADDING_SIZE, ocean_border_value);
-
     unsigned int r_start = LEVEL_PADDING_SIZE;
     unsigned int r_end = output->rows - LEVEL_PADDING_SIZE;
     unsigned int c_start = LEVEL_PADDING_SIZE;
@@ -152,7 +153,7 @@ void LevelDownsampleLevel(
             MATRIX_NNNER_DATA_TYPE sample_value = 0.0;
             for (unsigned int i = -r_resolution / 2; i <= r_resolution / 2; i++)
                 for (unsigned int j = -c_resolution / 2; j <= c_resolution / 2; j++)
-                    sample_value += (1 << (2 + abs(i + j))) * (*MatrixAddressAt(to_be_sampled, i, j));
+                    sample_value += 1.0 / (1 << (2 + abs(i) + abs(j))) * (*MatrixAddressAt(to_be_sampled, i, j));
 
             *MatrixAddressAt(output, r, c) = sample_value;
         }
