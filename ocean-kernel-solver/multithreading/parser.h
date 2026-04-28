@@ -5,5 +5,6 @@ int Parser(
     char * argv[],
     unsigned int* number_of_levels,
     unsigned int* downsampling_rate,
-    unsigned int* finest_grid_size
+    unsigned int* finest_grid_size,
+    unsigned int* number_of_workers
 );

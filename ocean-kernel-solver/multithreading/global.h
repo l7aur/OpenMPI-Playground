@@ -5,4 +5,4 @@
 
 #include <stdlib.h>
 
-ocean * global_ocean = NULL;
+extern ocean * global_ocean;

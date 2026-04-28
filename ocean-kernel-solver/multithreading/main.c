@@ -34,12 +34,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
 
-        if (OceanInit(
-            global_ocean
-        ) != EXIT_SUCCESS) {
-            fprintf(stderr, "Failed to init the global ocean!\n");
-            __throw(EXIT_FAILURE);
-        }
+        OceanInit(global_ocean);
     }
     __finally {
         if (__error_code != EXIT_SUCCESS) {

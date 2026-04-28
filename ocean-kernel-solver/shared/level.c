@@ -2,6 +2,7 @@
 #include "level.h"
 
 #include <stdio.h>
+#include <assert.h>
 #include <memory.h>
 #include <stdlib.h>
 
@@ -21,7 +22,7 @@ level* LevelAllocate(
     level* l = (level*)malloc(sizeof(level) * 1);
     if (l == NULL) {
         fprintf(stderr, "Failed to allocate level buffer!\n");
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     l->cols = cols + 2 * LEVEL_PADDING_SIZE;
@@ -129,8 +130,8 @@ void LevelInit(
     unsigned int level_c = 0; // do not count border
     for (unsigned int r = 0; r < l->rows; r++) {
         for (unsigned int c = 0; c < l->cols; c++) {
-            assert(LevelMatrixAt(l, 0, 0)->cols = LevelMatrixAt(l, r, c)->cols);
-            assert(LevelMatrixAt(l, 0, 0)->rows = LevelMatrixAt(l, r, c)->rows);
+            assert(LevelMatrixAt(l, 0, 0)->cols == LevelMatrixAt(l, r, c)->cols);
+            assert(LevelMatrixAt(l, 0, 0)->rows == LevelMatrixAt(l, r, c)->rows);
 
             matrix* current = LevelMatrixAt(l, r, c);
             MatrixInit(current, level_r, level_c, l->rows * l->cols, LEVEL_PADDING_SIZE);
@@ -139,21 +140,19 @@ void LevelInit(
         level_r += LevelMatrixAt(l, 0, 0)->rows - 2 * LEVEL_PADDING_SIZE;
         level_c = 0;
     }
-
-    return EXIT_SUCCESS;
 }
 
 void LevelDownsampleLevel(
-    level* to_be_sampled,
+    const level* to_be_sampled,
     level* output,
     const MATRIX_NNNER_DATA_TYPE ocean_border_value
 ) {
     assert(to_be_sampled != NULL); assert(to_be_sampled->data != NULL);
     assert(output != NULL); assert(output->data != NULL);
-    assert(to_be_sampled->rows & (to_be_sampled->rows - 1) == 0);
-    assert(to_be_sampled->cols & (to_be_sampled->cols - 1) == 0);
-    assert(output->rows & (output->rows - 1) == 0);
-    assert(output->cols & (output->cols - 1) == 0);
+    assert((to_be_sampled->rows & (to_be_sampled->rows - 1)) == 0);
+    assert((to_be_sampled->cols & (to_be_sampled->cols - 1)) == 0);
+    assert((output->rows & (output->rows - 1)) == 0);
+    assert((output->cols & (output->cols - 1)) == 0);
     assert(to_be_sampled->rows % output->rows == 0);
     assert(to_be_sampled->cols % output->cols == 0);
 

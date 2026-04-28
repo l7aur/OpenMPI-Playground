@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <stdio.h>
+#include <math.h>
 
 ocean* OceanAllocate(
     const unsigned int number_of_levels,
@@ -14,8 +15,8 @@ ocean* OceanAllocate(
 ) {
     assert(number_of_levels > 0);
     assert(downsampling_rate > 1);
-    assert(finest_grid_size & (finest_grid_size - 1) == 0);
-    assert(downsampling_rate & (downsampling_rate - 1) == 0);
+    assert((finest_grid_size & (finest_grid_size - 1)) == 0);
+    assert((downsampling_rate & (downsampling_rate - 1)) == 0);
     assert((finest_grid_size >> ((number_of_levels - 1) * (unsigned int)log2(downsampling_rate))) > 0);
     assert(grid_size > 0);
 
@@ -85,7 +86,7 @@ void OceanDeallocate(
     free(o), o = NULL;
 }
 
-matrix* OceanLevelAt(
+level* OceanLevelAt(
     const ocean* o,
     const unsigned int level_index
 ) {
@@ -94,10 +95,10 @@ matrix* OceanLevelAt(
     if (o->levels == NULL)
         return NULL;
 
-    return &(o->levels[level_index]);
+    return (o->levels[level_index]);
 }
 
-int OceanInit(
+void OceanInit(
     ocean* o
 ) {
     assert(o != NULL); assert(o->levels != NULL);

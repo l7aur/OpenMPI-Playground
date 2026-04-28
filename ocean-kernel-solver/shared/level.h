@@ -48,7 +48,7 @@ void LevelInit(
  * @param output coarser ocean level
  */
 void LevelDownsampleLevel(
-    level* to_be_sampled,
+    const level* to_be_sampled,
     level* output,
     const MATRIX_NNNER_DATA_TYPE ocean_border_value
 );

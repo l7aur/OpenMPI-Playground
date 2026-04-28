@@ -20,11 +20,11 @@ void OceanDeallocate(
     ocean* o
 );
 
-matrix* OceanLevelAt(
+level* OceanLevelAt(
     const ocean* o,
     const unsigned int level_index
 );
 
-int OceanInit(
+void OceanInit(
     ocean* o
 );
