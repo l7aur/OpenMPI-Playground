@@ -89,6 +89,24 @@ matrix* LevelMatrixAt(
     return l->data[r * l->cols + c];
 }
 
+MATRIX_NNNER_DATA_TYPE* LevelValueAt(
+    const level* l,
+    const unsigned int r,
+    const unsigned int c
+) {
+    assert(l != NULL); assert(l->data != NULL);
+    assert(r < l->rows); assert(c < l->cols);
+
+    const matrix* any_matrix = LevelMatrixAt(l, 0, 0);
+    const unsigned int matrix_r = any_matrix->rows - 2 * LEVEL_PADDING_SIZE;
+    const unsigned int matrix_c = any_matrix->cols - 2 * LEVEL_PADDING_SIZE;
+
+    const unsigned int level_r = r / matrix_r;
+    const unsigned int level_c = c / matrix_c;
+
+    return MatrixAddressAt(LevelMatrixAt(l, level_r, level_c), r % matrix_r + LEVEL_PADDING_SIZE, c % matrix_c + LEVEL_PADDING_SIZE);
+}
+
 void LevelInit(
     level* l,
     const MATRIX_NNNER_DATA_TYPE ocean_border_value
@@ -132,29 +150,23 @@ void LevelDownsampleLevel(
 ) {
     assert(to_be_sampled != NULL); assert(to_be_sampled->data != NULL);
     assert(output != NULL); assert(output->data != NULL);
-    assert((to_be_sampled->rows - LEVEL_PADDING_SIZE) & (to_be_sampled->rows - 1 - LEVEL_PADDING_SIZE) == 0);
-    assert((to_be_sampled->cols - LEVEL_PADDING_SIZE) & (to_be_sampled->cols - 1 - LEVEL_PADDING_SIZE) == 0);
-    assert((output->rows - LEVEL_PADDING_SIZE) & (output->rows - 1 - LEVEL_PADDING_SIZE) == 0);
-    assert((output->cols - LEVEL_PADDING_SIZE) & (output->cols - 1 - LEVEL_PADDING_SIZE) == 0);
-    assert((to_be_sampled->rows - LEVEL_PADDING_SIZE) % (output->rows - LEVEL_PADDING_SIZE) == 0);
-    assert((to_be_sampled->cols - LEVEL_PADDING_SIZE) % (output->cols - LEVEL_PADDING_SIZE) == 0);
+    assert(to_be_sampled->rows & (to_be_sampled->rows - 1) == 0);
+    assert(to_be_sampled->cols & (to_be_sampled->cols - 1) == 0);
+    assert(output->rows & (output->rows - 1) == 0);
+    assert(output->cols & (output->cols - 1) == 0);
+    assert(to_be_sampled->rows % output->rows == 0);
+    assert(to_be_sampled->cols % output->cols == 0);
 
-    unsigned int r_start = LEVEL_PADDING_SIZE;
-    unsigned int r_end = output->rows - LEVEL_PADDING_SIZE;
-    unsigned int c_start = LEVEL_PADDING_SIZE;
-    unsigned int c_end = output->cols - LEVEL_PADDING_SIZE;
-    unsigned int r_resolution = 1 + (to_be_sampled->rows - LEVEL_PADDING_SIZE * 2) / (output->rows - LEVEL_PADDING_SIZE * 2);
-    unsigned int c_resolution = 1 + (to_be_sampled->cols - LEVEL_PADDING_SIZE * 2) / (output->cols - LEVEL_PADDING_SIZE * 2);
-    for (unsigned int r = r_start; r < r_end; r++)
-        for (unsigned int c = c_start; c < c_end; c++) {
-            unsigned int r_sample_center = (r - LEVEL_PADDING_SIZE) * r_resolution + LEVEL_PADDING_SIZE;
-            unsigned int c_sample_center = (c - LEVEL_PADDING_SIZE) * c_resolution + LEVEL_PADDING_SIZE;
+    unsigned int r_resolution = 1 + (to_be_sampled->rows) / (output->rows);
+    unsigned int c_resolution = 1 + (to_be_sampled->cols) / (output->cols);
+    for (unsigned int r = r_resolution; r < output->rows - r_resolution; r++)
+        for (unsigned int c = c_resolution; c < output->cols - c_resolution; c++) {
 
             MATRIX_NNNER_DATA_TYPE sample_value = 0.0;
-            for (unsigned int i = -r_resolution / 2; i <= r_resolution / 2; i++)
-                for (unsigned int j = -c_resolution / 2; j <= c_resolution / 2; j++)
-                    sample_value += 1.0 / (1 << (2 + abs(i) + abs(j))) * (*MatrixAddressAt(to_be_sampled, i, j));
+            for (int i = -r_resolution / 2; i < r_resolution / 2; r++)
+                for (int j = -c_resolution / 2; j < c_resolution / 2; c++)
+                    sample_value += 1.0 / (1 << (2 + abs(i) + abs(j))) * (*LevelValueAt(to_be_sampled, r + i, c + j));
 
-            *MatrixAddressAt(output, r, c) = sample_value;
+            *LevelValueAt(output, r - r_resolution, c - c_resolution) = sample_value;
         }
 }

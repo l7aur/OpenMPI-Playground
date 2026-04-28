@@ -25,6 +25,12 @@ matrix* LevelMatrixAt(
     const unsigned int c
 );
 
+MATRIX_NNNER_DATA_TYPE* LevelValueAt(
+    const level* l,
+    const unsigned int r,
+    const unsigned int c
+);
+
 void LevelInit(
     level* l,
     const MATRIX_NNNER_DATA_TYPE ocean_border_value
