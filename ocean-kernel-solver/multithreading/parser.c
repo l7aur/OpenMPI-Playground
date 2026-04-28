@@ -21,10 +21,10 @@ int Parser(
         return EXIT_FAILURE;
     }
 
-    *number_of_levels = atoi(argv[1]);
-    *downsampling_rate = atoi(argv[2]);
-    *finest_grid_size = atoi(argv[3]);
-    *number_of_workers = atoi(argv[4]);
+    *number_of_workers = atoi(argv[1]);
+    *number_of_levels = atoi(argv[2]);
+    *downsampling_rate = atoi(argv[3]);
+    *finest_grid_size = atoi(argv[4]);
 
     if (*number_of_levels < 0) {
         fprintf(stderr, "<number_of_levels> must be greater than 0!\n");
@@ -65,6 +65,13 @@ int Parser(
         fprintf(stderr, "<number_of_workers> must be greater than 0!\n");
         return EXIT_FAILURE;
     }
+
+    if (sqrt(*number_of_workers) * sqrt(*number_of_workers) != *number_of_workers) {
+        fprintf(stderr, "<number_of_workers> must be a perfect square!\n");
+        return EXIT_FAILURE;
+    }
+
+    *number_of_workers = sqrt(*number_of_workers);
 
     return EXIT_SUCCESS;
 }

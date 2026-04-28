@@ -53,7 +53,6 @@ MATRIX_NNNER_DATA_TYPE* MatrixAddressAt(
     const unsigned int row,
     const unsigned int col
 ) {
-    assert(row > 0); assert(col > 0);
     assert(row < m->rows); assert(col < m->cols);
     assert(m->data != NULL);
 
@@ -92,7 +91,7 @@ void MatrixSetLeftPadding(
     const MATRIX_NNNER_DATA_TYPE padding_value
 ) {
     assert(m != NULL); assert(m->data != NULL);
-    assert(border_padding > 0);
+    assert(border_padding > 0); assert(border_padding < m->cols);
 
     for (unsigned int r = 0; r < m->rows; r++)
         for (unsigned int padding = 0; padding < border_padding; padding++)

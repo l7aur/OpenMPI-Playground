@@ -4,15 +4,15 @@
 
 typedef struct _level {
     matrix** data;
-    unsigned int rows;
-    unsigned int cols;
+    unsigned int data_rows;
+    unsigned int data_cols;
+    unsigned int grid_size;
 } level;
 
 level* LevelAllocate(
     const unsigned int rows,
     const unsigned int cols,
-    const unsigned int matrix_rows,
-    const unsigned int matrix_cols
+    const unsigned int grid_size
 );
 
 void LevelDeallocate(

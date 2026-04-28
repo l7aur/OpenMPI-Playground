@@ -37,17 +37,17 @@ ocean* OceanAllocate(
 
         unsigned int level_size = finest_grid_size;
         for (unsigned int l = 0; l < o->number_of_levels; l++) {
+            printf("%d<-\n", level_size);
             o->levels[l] = LevelAllocate(
                 level_size,
                 level_size,
-                level_size / grid_size,
-                level_size / grid_size
+                grid_size
             );
             if (o->levels[l] == NULL) {
                 fprintf(stderr, "Failed to allocate level %d\n", l);
                 __throw(EXIT_FAILURE);
             }
-            level_size >>= downsampling_rate;
+            level_size /= downsampling_rate;
         }
 
     }
