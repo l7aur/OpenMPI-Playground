@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <math.h>
 
+void _OceanExchangeLevelBorders(
+    ocean * o
+);
+
 ocean* OceanAllocate(
     const unsigned int number_of_levels,
     const unsigned int downsampling_rate,
@@ -95,7 +99,7 @@ level* OceanLevelAt(
     if (o->levels == NULL)
         return NULL;
 
-    return (o->levels[level_index]);
+    return o->levels[level_index];
 }
 
 void OceanInit(
@@ -107,5 +111,48 @@ void OceanInit(
     LevelInit(o->levels[0], OCEAN_BORDER_SENTINEL);
 
     for (unsigned int l = 1; l < o->number_of_levels; l++)
-        LevelDownsampleLevel(o->levels[l - 1], o->levels[l], OCEAN_BORDER_SENTINEL);
+        LevelDownsampleLevel(OceanLevelAt(o, l - 1), OceanLevelAt(o, l), OCEAN_BORDER_SENTINEL);
+
+    _OceanExchangeLevelBorders(o);
+}
+
+void _OceanExchangeLevelBorders(
+    ocean * o
+) {
+    assert(o != NULL);
+
+    for (unsigned int l = 0; l < o->number_of_levels; l++) {
+        level* current_level = OceanLevelAt(o, l);
+        
+        if (current_level->grid_size <= 1)
+            break /* smaller grid sizes are coming */;
+
+        for (unsigned int r = 0; r < current_level->grid_size - 1; r++)
+            for (unsigned int c = 0; c < current_level->grid_size; c++)
+                MatrixCopyLastRowToPadding(
+                    LevelMatrixAt(current_level, r, c),
+                    LevelMatrixAt(current_level, r + 1, c)
+                );
+
+        for (unsigned int r = 1; r < current_level->grid_size; r++)
+            for (unsigned int c = 0; c < current_level->grid_size; c++)
+                MatrixCopyFirstRowToPadding(
+                    LevelMatrixAt(current_level, r, c),
+                    LevelMatrixAt(current_level, r - 1, c)
+                );
+
+        for (unsigned int r = 0; r < current_level->grid_size; r++)
+            for (unsigned int c = 0; c < current_level->grid_size - 1; c++)
+                MatrixCopyLastColumnToPadding(
+                    LevelMatrixAt(current_level, r, c),
+                    LevelMatrixAt(current_level, r, c + 1)
+                );
+
+        for (unsigned int r = 0; r < current_level->grid_size; r++)
+            for (unsigned int c = 1; c < current_level->grid_size; c++)
+                MatrixCopyFirstColumnToPadding(
+                    LevelMatrixAt(current_level, r, c),
+                    LevelMatrixAt(current_level, r, c - 1)
+                );
+    }
 }

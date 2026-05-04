@@ -54,3 +54,23 @@ void MatrixInit(
     const unsigned int level_number_of_elements,
     const unsigned int border_padding
 );
+
+void MatrixCopyLastRowToPadding(
+    matrix* src,
+    matrix* dst
+);
+
+void MatrixCopyFirstRowToPadding(
+    matrix* src,
+    matrix* dst
+);
+
+void MatrixCopyLastColumnToPadding(
+    matrix* src,
+    matrix* dst
+);
+
+void MatrixCopyFirstColumnToPadding(
+    matrix* src,
+    matrix* dst
+);

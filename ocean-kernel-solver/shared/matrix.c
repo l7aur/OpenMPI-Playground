@@ -9,6 +9,14 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+enum _MatrixCopyPadding { FirstCol, FirstRow, LastCol, LastRow };
+
+void _MatrixCopyToPadding(
+    matrix* src, 
+    matrix* dst, 
+    const enum _MatrixCopyPadding what_to_copy
+);
+
 matrix* MatrixAllocate(
     const unsigned int rows,
     const unsigned int cols
@@ -122,4 +130,64 @@ void MatrixInit(
     for (unsigned int r = border_padding; r < m->rows - border_padding; r++)
         for (unsigned int c = border_padding; c < m->cols - border_padding; c++)
             *MatrixAddressAt(m, r, c) = sinl((level_r + r) * factor) * sinl((level_c + c) * factor);
+}
+
+void MatrixCopyLastRowToPadding(
+    matrix* src,
+    matrix* dst
+) {
+    _MatrixCopyToPadding(src, dst, LastRow);
+}
+
+void MatrixCopyFirstRowToPadding(
+    matrix* src,
+    matrix* dst
+) {
+    _MatrixCopyToPadding(src, dst, FirstRow);
+}
+
+void MatrixCopyLastColumnToPadding(
+    matrix* src,
+    matrix* dst
+) {
+    _MatrixCopyToPadding(src, dst, LastCol);
+}
+
+void MatrixCopyFirstColumnToPadding(
+    matrix* src,
+    matrix* dst
+) {
+    _MatrixCopyToPadding(src, dst, FirstCol);
+}
+
+void _MatrixCopyToPadding(
+    matrix* src, 
+    matrix* dst, 
+    const enum _MatrixCopyPadding what_to_copy
+) {
+    assert(src != NULL);
+    assert(dst != NULL);
+    assert(src->cols == dst->cols);
+    assert(src->rows == dst->rows);
+    
+    if (what_to_copy == LastCol || what_to_copy == FirstCol) {
+        unsigned int target_c = 0;
+        if (what_to_copy == LastCol)
+            target_c = src->cols - 1;
+
+        for (unsigned int i = 0; i < dst->rows; i++)
+            *MatrixAddressAt(dst, i, target_c) = *MatrixAddressAt(src, i, target_c);
+    }
+    else if (what_to_copy == LastRow || what_to_copy == FirstRow) {
+        unsigned int target_r = 0;
+        if (what_to_copy == LastRow)
+            target_r = src->rows - 1;
+
+        for (unsigned int i = 0; i < dst->cols; i++)
+            *MatrixAddressAt(dst, target_r, i) = *MatrixAddressAt(src, target_r, i);
+    }
+    else {
+        /* should not get here */
+        assert(1);
+    }
 }
