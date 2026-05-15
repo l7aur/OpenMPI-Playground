@@ -1,0 +1,5 @@
+dataset/
+results-shared-memory.csv
+results-distributed.csv
+shared-memory/main
+distributed/main
