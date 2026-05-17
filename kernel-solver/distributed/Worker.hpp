@@ -15,7 +15,10 @@ public:
         const float max_diff,
         const std::pair<int, int> grid_size
     );
-    void solve();
+    void solve(
+        const int world_size,
+        const float max_error
+    );
 
 private:
     float max_diff;

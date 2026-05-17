@@ -37,6 +37,7 @@ public:
     );
     int get_cols() const { return cols - 2 * PADDING; }
     int get_rows() const { return rows - 2 * PADDING; }
+    float uniformize();
 
 private:
     std::vector<float> data;

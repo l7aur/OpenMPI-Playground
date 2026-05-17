@@ -97,3 +97,20 @@ void Grid::set_last_padding_col(
     for (int i = PADDING; i < rows - PADDING; i++)
         data.at(i * cols + cols - 1) = elems[i - PADDING];
 }
+
+float Grid::uniformize()
+{
+    std::vector<float> data_copy(data);
+    float diff = 0.0f;
+    for (int i = PADDING; i < rows - PADDING; i++)
+        for (int j = PADDING; j < cols - PADDING; j++) {
+            data[i * cols + j] = 0.2f * (
+                data_copy[i * cols + j] +
+                data_copy[i * cols + j + 1] +
+                data_copy[i * cols + j - 1] +
+                data_copy[(i - 1) * cols + j] + 
+                data_copy[(i + 1) * cols + j]);
+            diff += std::abs(data[i * cols + j] - data_copy[i * cols + j]);
+        }
+    return diff;
+}

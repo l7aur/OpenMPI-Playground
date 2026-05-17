@@ -83,7 +83,7 @@ float Grid::solve(
                 data_read_buffer->at(i).at(j + 1) + 
                 data_read_buffer->at(i).at(j - 1)
             );
-            diff += abs(data_read_buffer->at(i).at(j) - data_write_buffer->at(i).at(j));
+            diff += std::abs(data_read_buffer->at(i).at(j) - data_write_buffer->at(i).at(j));
         }
     }
     return diff;

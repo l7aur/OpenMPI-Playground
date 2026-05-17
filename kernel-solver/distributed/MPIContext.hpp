@@ -11,6 +11,7 @@ public:
     std::pair<int, int> get_grid_size() const { return grid_size; }
     MPI_Comm get_cartesian_comm() const { return cartesian_comm; }
     int get_rank() const { return rank; }
+    int get_world_size() const { return grid_size.first * grid_size.second; }
     
 private:
     std::pair<int, int> grid_size;

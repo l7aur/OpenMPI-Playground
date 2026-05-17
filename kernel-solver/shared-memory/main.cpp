@@ -6,6 +6,7 @@
 #include <vector>
 #include <barrier>
 #include <numeric>
+#include <iostream>
 
 int main(int argc, char* argv[]) {
     auto [path, max_diff, workers] = Parser::parse(argc, argv);
@@ -64,6 +65,6 @@ int main(int argc, char* argv[]) {
         << "Execution time " 
         << std::chrono::duration_cast<std::chrono::nanoseconds>(finish_time - start_time).count() / 1'000'000'000.0 // seconds
         << std::endl;
-
+    g.print_write_buffer();
     return 0;
 }

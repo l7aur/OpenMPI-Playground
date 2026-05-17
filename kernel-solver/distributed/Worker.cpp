@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <cassert>
+#include <numeric>
 #include <iostream>
 
 Worker::Worker(
@@ -68,9 +69,38 @@ void Worker::read(
     fin.close();
 }
 
-void Worker::solve()
+void Worker::solve(
+    const int world_size,
+    const float max_error
+)
 {
-    update_interprocess_borders();
+    int signal_exit = 0;
+    float total_diff = 0.0f;
+    while (!signal_exit) {
+        update_interprocess_borders();
+        auto current_diff = grid.uniformize();
+
+        MPI_Barrier(cartesian_comm);
+        MPI_Allreduce(
+            &current_diff,
+            &total_diff,
+            1,
+            MPI_FLOAT,
+            MPI_SUM,
+            cartesian_comm
+        );
+
+        MPI_Bcast(
+            &signal_exit,
+            1,
+            MPI_INT,
+            0,
+            cartesian_comm
+        );
+
+        signal_exit = (total_diff / (float)(grid.get_cols() * grid.get_rows()) < max_error); 
+    }
+
     grid.print(position);
 }
 

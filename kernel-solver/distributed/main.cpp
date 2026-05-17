@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
         max_diff, 
         context.get_grid_size()
     );
-    worker.solve();
+    worker.solve(context.get_world_size(), max_diff);
 
     return 0;
 }
