@@ -10,6 +10,7 @@ public:
     std::pair<int, int> get_position() const { return { position[0], position[1] }; }
     std::pair<int, int> get_grid_size() const { return grid_size; }
     MPI_Comm get_cartesian_comm() const { return cartesian_comm; }
+    int get_rank() const { return rank; }
     
 private:
     std::pair<int, int> grid_size;

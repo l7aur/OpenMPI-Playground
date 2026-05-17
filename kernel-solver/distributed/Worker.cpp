@@ -7,6 +7,7 @@
 
 Worker::Worker(
     const MPI_Comm cartesian_comm_,
+    const int rank_,
     const std::pair<int, int>& position_,
     const std::filesystem::path &p,
     const float max_diff_,
@@ -14,6 +15,7 @@ Worker::Worker(
 )   : max_diff{ max_diff_ }
     , position{ position_ }
     , cartesian_comm{ cartesian_comm_ }
+    , rank{ rank_ }
 {
     read(p, grid_size);
 }
@@ -90,81 +92,66 @@ void Worker::update_interprocess_borders()
             throw std::runtime_error("Failed to find neighbor up");
     }
 
-    exchange_row_up(sources[0]);
-    exchange_row_down(dests[0]);
-    exchange_col_left(sources[1]);
-    exchange_col_right(dests[1]);
+    exchange_vertically(sources[0], dests[0]);
+    exchange_horizontally(sources[1], dests[1]);
 }
 
-void Worker::exchange_row_up(
-    const int dest
+void Worker::exchange_vertically(
+    const int above,
+    const int below
 )
 {
     auto n = grid.get_cols();
     auto first_padding_row = std::make_unique<float[]>(n);
-    auto first_data_row = grid.get_first_data_row();
-
-    exchange(first_data_row.get(), first_padding_row.get(), n, dest);
-
-    grid.set_first_padding_col(first_padding_row.get());
-}
-
-void Worker::exchange_row_down(
-    const int dest
-)
-{
-    auto n = grid.get_cols();
     auto last_padding_row = std::make_unique<float[]>(n);
+    
+    auto first_data_row = grid.get_first_data_row();
     auto last_data_row = grid.get_last_data_row();
 
-    exchange(last_data_row.get(), last_padding_row.get(), n, dest);
+    exchange(first_data_row.get(), above, last_padding_row.get(), below, n);
+    exchange(last_data_row.get(), below, first_padding_row.get(), above, n);
 
-    grid.set_last_padding_col(last_padding_row.get());
+    grid.set_first_padding_row(first_padding_row.get());
+    grid.set_last_padding_row(last_padding_row.get());
 }
 
-void Worker::exchange_col_left(
-    const int dest
+void Worker::exchange_horizontally(
+    const int left,
+    const int right
 )
 {
     auto n = grid.get_rows();
     auto first_padding_col = std::make_unique<float[]>(n);
-    auto first_data_col = grid.get_first_data_col();
-
-    exchange(first_data_col.get(), first_padding_col.get(), n, dest);
-
-    grid.set_first_padding_col(first_padding_col.get());
-}
-
-void Worker::exchange_col_right(
-    const int dest
-)
-{
-    auto n = grid.get_rows();
     auto last_padding_col = std::make_unique<float[]>(n);
+
+    auto first_data_col = grid.get_first_data_col();
     auto last_data_col = grid.get_last_data_col();
 
-    exchange(last_data_col.get(), last_padding_col.get(), n, dest);
+    exchange(first_data_col.get(), left, last_padding_col.get(), right, n);
+    exchange(last_data_col.get(), right, first_padding_col.get(), left, n);
 
+    grid.set_first_padding_col(first_padding_col.get());
     grid.set_last_padding_col(last_padding_col.get());
 }
 
 void Worker::exchange(
     float * send_buffer,
+    const int send_dest,
     float * recv_buffer,
-    const int n,
-    const int dest
+    const int recv_source,
+    const int n
 )
 {
     auto status = MPI_Sendrecv(
         send_buffer,
         n,
         MPI_FLOAT,
-        dest,
+        send_dest,
         0,
         recv_buffer,
         n,
         MPI_FLOAT,
-        dest,
+        recv_source,
         0,
         cartesian_comm,
         MPI_STATUS_IGNORE

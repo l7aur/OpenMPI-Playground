@@ -38,7 +38,7 @@ std::unique_ptr<float[]> Grid::get_first_data_row() const
 {
     auto elems = std::make_unique<float[]>(cols - 2 * PADDING);
     for (int i = PADDING; i < cols - PADDING; i++)
-        elems[i] = data.at(PADDING * cols + i);
+        elems[i - PADDING] = data.at(PADDING * cols + i);
     return elems;
 }
 

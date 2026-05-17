@@ -10,6 +10,7 @@ int main(int argc, char* argv[])
 
     auto worker = Worker(
         context.get_cartesian_comm(),
+        context.get_rank(),
         context.get_position(), 
         path, 
         max_diff, 
