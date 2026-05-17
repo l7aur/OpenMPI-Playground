@@ -1,7 +1,6 @@
 #include "Grid.hpp"
 #include "Parser.hpp"
 
-#include <iostream>
 #include <thread>
 #include <chrono>
 #include <vector>

@@ -4,7 +4,7 @@ EXEC="main"
 MAX_DIFF=0.2
 INPUT_FILES=("dataset/10x10.txt" "dataset/100x100.txt" "dataset/1000x1000.txt" "dataset/10000x10000.txt")
 
-SOURCES_SHARED_MEMORY=("shared-memory/main.cpp" "shared-memory/Grid.cpp" "shared-memory/Parser.cpp")
+SOURCES_SHARED_MEMORY=("shared-memory/main.cpp" "shared-memory/Grid.cpp" "common/Parser.cpp")
 RESULT_FILE_SHARED_MEMORY="results-shared-memory.csv"
 
 echo "Compiling shared memory implementation..."
