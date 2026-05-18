@@ -33,6 +33,7 @@ void Worker::read(
     int r, c;
     fin >> r >> c;
     assert(r == c);
+    total_number_of_elements = r * c;
 
     fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     
@@ -76,11 +77,13 @@ void Worker::solve(
 {
     int signal_exit = 0;
     float total_diff = 0.0f;
+
+    MPI_Barrier(cartesian_comm);
+    double start_time = MPI_Wtime();
     while (!signal_exit) {
         update_interprocess_borders();
         auto current_diff = grid.uniformize();
 
-        MPI_Barrier(cartesian_comm);
         MPI_Allreduce(
             &current_diff,
             &total_diff,
@@ -90,6 +93,8 @@ void Worker::solve(
             cartesian_comm
         );
 
+        if (rank == 0)
+            signal_exit = (total_diff / (float)(total_number_of_elements) < max_error); 
         MPI_Bcast(
             &signal_exit,
             1,
@@ -98,10 +103,13 @@ void Worker::solve(
             cartesian_comm
         );
 
-        signal_exit = (total_diff / (float)(grid.get_cols() * grid.get_rows()) < max_error); 
     }
 
-    grid.print(position);
+    MPI_Barrier(cartesian_comm);
+    double finish_time = MPI_Wtime();
+    if (rank == 0)
+        std::cout << "Execution time " << finish_time - start_time  << std::endl; 
+    // grid.print(position);
 }
 
 void Worker::update_interprocess_borders()

@@ -4,7 +4,7 @@ EXEC="main"
 MAX_DIFF=0.2
 INPUT_FILES=("dataset/10x10.txt" "dataset/100x100.txt" "dataset/1000x1000.txt" "dataset/10000x10000.txt")
 
-SOURCES_SHARED_MEMORY=("shared-memory/main.cpp" "shared-memory/Grid.cpp" "common/Parser.cpp")
+SOURCES_SHARED_MEMORY=("shared-memory/main.cpp" "shared-memory/Grid.cpp" "shared-memory/Parser.cpp")
 RESULT_FILE_SHARED_MEMORY="results-shared-memory.csv"
 
 echo "Compiling shared memory implementation..."
@@ -48,7 +48,7 @@ for epoch in {1..25}; do
     done
 done
 
-SOURCES_DISTRIBUTED=()
+SOURCES_DISTRIBUTED=("distributed/Grid.cpp" "distributed/main.cpp" "distributed/MPIContext.cpp" "distributed/Parser.cpp" "distributed/Worker.cpp")
 RESULT_FILE_DISTRIBUTED="results-distributed.csv"
 
 echo "Compiling distributed implementation..."
@@ -78,7 +78,7 @@ for epoch in {1..25}; do
         for p in 1 2 4 8 16 32 64; do
             echo "Running with $p process(es)..."
             
-            RAW_OUTPUT=$(mpiexec --use-hwthread-cpus -n $p distributed/$EXEC)
+            RAW_OUTPUT=$(mpiexec --use-hwthread-cpus --oversubscribe -n $p distributed/$EXEC)
             echo "$RAW_OUTPUT"
             
             EXEC_TIME=$(echo "$RAW_OUTPUT" | grep "Execution time" | grep -oP '\d+\.\d+')

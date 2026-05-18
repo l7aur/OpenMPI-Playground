@@ -7,6 +7,7 @@
 #include <barrier>
 #include <numeric>
 #include <iostream>
+#include <atomic>
 
 int main(int argc, char* argv[]) {
     auto [path, max_diff, workers] = Parser::parse(argc, argv);
@@ -16,8 +17,8 @@ int main(int argc, char* argv[]) {
 
     int grid_size = g.get_grid_size();
     int thread_grid_size = grid_size / workers;
-    float diff = 0.0f;
-    std::vector<int> local_diffs(workers);
+    std::atomic<float> diff = 0.0f;
+    std::vector<float> local_diffs(workers);
     std::barrier b(workers);
 
     auto compute_global_err = [&] {
@@ -42,29 +43,28 @@ int main(int argc, char* argv[]) {
         }
     };
 
-    std::vector<std::jthread> threads;
+    std::vector<std::thread> threads;
     
     auto start_time = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < workers; i++) {
         int start_r = i * thread_grid_size;
         int end_r = (i == workers - 1) ? grid_size : (i + 1) * thread_grid_size;
-        threads.emplace_back(std::jthread(
+        threads.emplace_back(std::thread(
             work,
             start_r,
             end_r,
             i
         ));
     }
-    threads.clear();
+    for (auto& t : threads)
+        if (t.joinable())
+            t.join();
     auto finish_time = std::chrono::high_resolution_clock::now();
 
-    // g.print_write_buffer();
-    // std::cout << std::endl;
-    // std::cout << "Current error: " << diff << std::endl;
     std::cout 
         << "Execution time " 
         << std::chrono::duration_cast<std::chrono::nanoseconds>(finish_time - start_time).count() / 1'000'000'000.0 // seconds
         << std::endl;
-    g.print_write_buffer();
+    // g.print_read_buffer();
     return 0;
 }

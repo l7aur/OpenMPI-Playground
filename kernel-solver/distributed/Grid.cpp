@@ -110,7 +110,7 @@ float Grid::uniformize()
                 data_copy[i * cols + j - 1] +
                 data_copy[(i - 1) * cols + j] + 
                 data_copy[(i + 1) * cols + j]);
-            diff += std::abs(data[i * cols + j] - data_copy[i * cols + j]);
+            diff += std::abs(data_copy[i * cols + j] - data[i * cols + j]);
         }
     return diff;
 }

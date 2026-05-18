@@ -26,6 +26,7 @@ private:
     Grid grid;
     MPI_Comm cartesian_comm;
     int rank;
+    int total_number_of_elements{ 0 };
 
     void read(
         const std::filesystem::path& p,
