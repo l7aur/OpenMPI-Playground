@@ -52,7 +52,7 @@ SOURCES_DISTRIBUTED=("distributed/Grid.cpp" "distributed/main.cpp" "distributed/
 RESULT_FILE_DISTRIBUTED="results-distributed.csv"
 
 echo "Compiling distributed implementation..."
-mpicc -O3 ${SOURCES_DISTRIBUTED[@]} -o distributed/$EXEC -Wall -Werror
+mpic++ -O3 ${SOURCES_DISTRIBUTED[@]} -o distributed/$EXEC -Wall -Werror -lm
 
 if [ $? -ne 0 ]; then
     echo "Failed to compile distributed implementation! Exiting..."
@@ -78,18 +78,18 @@ for epoch in {1..25}; do
         for p in 1 2 4 8 16 32 64; do
             echo "Running with $p process(es)..."
             
-            RAW_OUTPUT=$(mpiexec --use-hwthread-cpus --oversubscribe -n $p distributed/$EXEC)
+            RAW_OUTPUT=$(mpiexec --use-hwthread-cpus --oversubscribe -n $p distributed/$EXEC $data $MAX_DIFF)
             echo "$RAW_OUTPUT"
             
             EXEC_TIME=$(echo "$RAW_OUTPUT" | grep "Execution time" | grep -oP '\d+\.\d+')
             if [ -z "$EXEC_TIME" ]; then
                 echo "[ERROR] Failed to grep execution time"
-                echo "$epoch,$t,$data,err" >> $RESULT_FILE_DISTRIBUTED
+                echo "$epoch,$p,$data,err" >> $RESULT_FILE_DISTRIBUTED
             else
-                echo "$epoch,$t,$data,$EXEC_TIME" >> $RESULT_FILE_DISTRIBUTED
+                echo "$epoch,$p,$data,$EXEC_TIME" >> $RESULT_FILE_DISTRIBUTED
             fi
 
-            sleep 3
+            sleep 5
         done
     done
 done

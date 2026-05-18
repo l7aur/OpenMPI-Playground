@@ -108,7 +108,7 @@ void Worker::solve(
     MPI_Barrier(cartesian_comm);
     double finish_time = MPI_Wtime();
     if (rank == 0)
-        std::cout << "Execution time " << finish_time - start_time  << std::endl; 
+        std::cout << "Execution time " << std::fixed << finish_time - start_time  << std::endl; 
     // grid.print(position);
 }
 
