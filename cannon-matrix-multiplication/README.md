@@ -9,7 +9,7 @@
 
 ## benchmarking
 
-Note: compiled with mpicc -o3 on Ubuntu
+Note: compiled with `mpicc -o3` on Ubuntu
 
 ![Execution time average](plots/Picture1.png)
 
