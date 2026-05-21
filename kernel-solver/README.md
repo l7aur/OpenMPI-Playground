@@ -12,7 +12,9 @@
 
 Note: compiled with `mpicc -o3` / `g++ -o3`  on Ubuntu
 
-Results are compiled out of `25` epochs.
+Results are compiled out of approx. `25` epochs.
+
+Input datasets have been generated using the formula `(float)sin(rand()) * (rand() % 10)`.
 
 ### shared memory implementation
 
