@@ -33,10 +33,10 @@ for epoch in {1..25}; do
 
         for p in 1 2 4 8 16 32 64; do
             echo "Running with $p process(es)..."
-            
+
             RAW_OUTPUT=$(mpiexec --use-hwthread-cpus --oversubscribe -n $p distributed/$EXEC $data $MAX_DIFF)
             echo "$RAW_OUTPUT"
-            
+
             EXEC_TIME=$(echo "$RAW_OUTPUT" | grep "Execution time" | grep -oP '\d+\.\d+')
             if [ -z "$EXEC_TIME" ]; then
                 echo "[ERROR] Failed to grep execution time"
