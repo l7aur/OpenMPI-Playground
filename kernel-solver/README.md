@@ -12,7 +12,7 @@
 
 Note: compiled with `mpicc -o3` / `g++ -o3`  on Ubuntu
 
-Results are compiled out of approx. `25` epochs.
+Results are compiled out of approx. `25` epochs, `max_diff=0.01`.
 
 Input datasets have been generated using the formula `(float)sin(rand()) * (rand() % 10)`.
 
