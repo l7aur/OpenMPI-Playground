@@ -53,3 +53,10 @@ This plot depicts the speedup and highlights that large datasets benefit from ve
 ![Efficiency processes](plots/efficiency_proc.png)
 
 The efficiency complements the speedup plot by providing valuable information about the resource usage. As expected, it follows a decreasing trend, however, note this tred is steeper than the trend in the shared memory implementation. This is caused by inter process communication.
+
+### enhancements
+
+#### double buffering (shared memory)
+* **The Problem:** In iterative matrix calculations (like kernel or stencil operations), writing directly back to the active matrix requires strict synchronization or cloning data to prevent race conditions or data corruption from overwriting elements too early.
+* **The Solution:** We implemented a double-buffering mechanism utilizing two distinct memory buffers: a **read buffer** (the current state) and a **write buffer** (the next state). At the end of each iteration, we simply swap the pointers of the two buffers.
+* **The Impact:** This eliminates the heavy overhead of allocating/copying memory on every iteration, ensures absolute data integrity across parallel boundaries, and reduces thread contention.

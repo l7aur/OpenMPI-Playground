@@ -29,14 +29,14 @@ void Worker::read(
     std::ifstream fin(p);
     if (!fin.is_open())
         throw std::runtime_error("Failed to open file: " + p.string());
-    
+
     int r, c;
     fin >> r >> c;
     assert(r == c);
     total_number_of_elements = r * c;
 
     fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
+
     const int& grid_height = grid_size.first;
     const int& grid_width = grid_size.second;
 
@@ -46,7 +46,7 @@ void Worker::read(
     auto my_c = my_base_c;
 
     if (position.first == grid_height - 1)
-        my_r += r % grid_height; 
+        my_r += r % grid_height;
     if (position.second == grid_width - 1)
         my_c += c % grid_width;
 
@@ -94,7 +94,7 @@ void Worker::solve(
         );
 
         if (rank == 0)
-            signal_exit = (total_diff / (float)(total_number_of_elements) < max_error); 
+            signal_exit = (total_diff / (float)(total_number_of_elements) < max_error);
         MPI_Bcast(
             &signal_exit,
             1,
@@ -108,7 +108,7 @@ void Worker::solve(
     MPI_Barrier(cartesian_comm);
     double finish_time = MPI_Wtime();
     if (rank == 0)
-        std::cout << "Execution time " << std::fixed << finish_time - start_time  << std::endl; 
+        std::cout << "Execution time " << std::fixed << finish_time - start_time  << std::endl;
     // grid.print(position);
 }
 
@@ -142,7 +142,7 @@ void Worker::exchange_vertically(
     auto n = grid.get_cols();
     auto first_padding_row = std::make_unique<float[]>(n);
     auto last_padding_row = std::make_unique<float[]>(n);
-    
+
     auto first_data_row = grid.get_first_data_row();
     auto last_data_row = grid.get_last_data_row();
 
